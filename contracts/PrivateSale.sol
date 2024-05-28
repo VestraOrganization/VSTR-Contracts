@@ -45,9 +45,9 @@ contract PrivateSale is Ownable, ReentrancyGuard {
 
     uint256 internal constant MIN_PURCHASE = 700 * USDT_DECIMALS;
     uint256 internal constant MAX_PURCHASE = 70000 * USDT_DECIMALS;
-    uint256 internal constant TOKEN_PRICE = 700; // 0.0005 USDT
+    uint256 internal constant TOKEN_PRICE = 700; 
     uint256 internal constant TOTAL_ALLOCATION = 2_000_000_000 * TOKEN_DECIMALS;
-    uint256 internal constant TOTAL_EXPECTATION = 1_400_000 * USDT_DECIMALS; // ❗❗ fiyat değişirse reasede değişir
+    uint256 internal constant TOTAL_EXPECTATION = 1_400_000 * USDT_DECIMALS;
     uint256 internal constant TGE_RELEASE_PERCENTAGE = 10;
     uint256 internal constant MONTHLY_RELEASE_PERCENTAGE = 5;
 
