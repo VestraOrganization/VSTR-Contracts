@@ -20,7 +20,6 @@ async function main() {
     console.log("You can't verify on Localhost. Network: " + network.name);
     return false;
   }
-  // Sözleşmeyi Etherscan üzerinde doğrula
   console.log("Contract is verifying on Etherscan...");
   try {
     await run("verify:verify", {

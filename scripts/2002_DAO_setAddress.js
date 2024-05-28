@@ -8,23 +8,20 @@ const netWorkName = network.name;
 const opt = {
   owner: DATA.deploy.ownerAddress,
   contractName: DATA.dao.contractName,
-  nftAddress:     adresses[netWorkName].CMLENFT,    
-  tokenAddress:   adresses[netWorkName].VDAOToken,
-  stakeDaoAddress: adresses[netWorkName].StakingDAO,
-  daoAddress:     adresses[netWorkName].VDAO
+  nftAddress:     DATA.deploy.nftAddress,    
+  tokenAddress:   DATA.deploy.tokenAddress,
+  stakeDaoAddress: DATA.deploy.stakeDaoAddress,
+  daoAddress:     DATA.deploy.daoAddress
 }
 
 async function main() {
-  // Sözleşmenin ABI'si ve adresi
 
   const contractABI = require('../artifacts/contracts/' + opt.contractName + ".sol/" + opt.contractName + ".json");
 
-  // Sözleşmeyi etkileşim için hazırla
   const Contract = await ethers.getContractAt(contractABI.abi, adresses[network.name][opt.contractName]);
 
   console.log("Pending... Network:"+ network.name);
 
-  // sözleşme fonksiyonunu çağır
   try {
     const tx = await Contract.setAddresses(opt.tokenAddress, opt.nftAddress, opt.stakeDaoAddress);
     const receipt = await tx.wait(); 

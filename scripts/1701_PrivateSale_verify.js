@@ -9,11 +9,11 @@ const opt = {
   nftAddress: DATA.deploy.nftAddress,
 
   contractName: DATA.privateSale.contractName,
-  startTime: DATA.privateSale.startTime,                           // Private Sale başlangıç zamanı
-  endTime: DATA.privateSale.endTime,                               // Private Sale bitiş zamanı
-  startVestingTime: DATA.privateSale.startVestingTime, // vesting başlangıcı (ilk claim edeceği zaman) x gün
-  waitingTime: DATA.privateSale.waitingTime,             // ilk açılıştan sonraki bekleme süresi x gün (60 * 60 * 24 * 90) = 3 ay
-  unlockPeriods: DATA.privateSale.unlockPeriods,             // ne kadarlık zaman diliminde açılacağı x gün (60 * 60 * 24 * 30) = 1 ay
+  startTime: DATA.privateSale.startTime, 
+  endTime: DATA.privateSale.endTime,
+  startVestingTime: DATA.privateSale.startVestingTime,
+  waitingTime: DATA.privateSale.waitingTime, 
+  unlockPeriods: DATA.privateSale.unlockPeriods, 
 
 }
 

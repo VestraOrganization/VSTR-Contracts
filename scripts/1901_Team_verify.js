@@ -7,8 +7,10 @@ const opt = {
   owner: DATA.deploy.ownerAddress,
   contractName: DATA.team.contractName,
   launchTime: DATA.dao.launchTime,
-  tokenAddress: network.name == "mainnet" ? adresses.mainnet.VDAOToken : adresses.sepolia.VDAOToken, // ❗
-  nftAddress: network.name == "mainnet" ? adresses.mainnet.CMLENFT : adresses.sepolia.CMLENFT, // ❗
+
+  tokenAddress: DATA.deploy.tokenAddress,
+  nftAddress: DATA.deploy.nftAddress,
+  
   waitingTime: DATA.team.waitingTime,
   unlockPeriods: DATA.team.unlockPeriods,
 }

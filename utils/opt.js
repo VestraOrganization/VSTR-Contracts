@@ -7,16 +7,17 @@ const holders = require("./holders");
 const PRIVATESALE_START_TIME = func.timestampLocal(2024, 12, 1, 0, 0, 0);
 const LAUNCH_TIME = func.timestampLocal(2025, 1, 1, 0, 0, 0);
 
-const DAY_TIME = (60 * 60 * 24); 
-const MONTH_TIME = (DAY_TIME * 30); 
+const DAY_TIME = (60 * 60 * 24);
+const MONTH_TIME = (DAY_TIME * 30);
 
 const DATA = {
     deploy: {
         ownerAddress: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-        usdtAddress:  addresses.localhost.USDV,
+        usdtAddress: addresses.localhost.USDV,
         tokenAddress: addresses.localhost.VDAOToken,
-        nftAddress:   addresses.localhost.CMLENFT,
-        daoAddress:   addresses.localhost.VDAO,
+        nftAddress: addresses.localhost.CMLENFT,
+        daoAddress: addresses.localhost.VDAO,
+        stakeDaoAddress: addresses.localhost.StakingDAO,
 
     }, delegate: [
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", // Delegate 1
@@ -59,210 +60,193 @@ const DATA = {
     },
     airdrop: {
         contractName: "VDAOAirdrop",
-        // TGE 20%, 3 Ay Kilit Açılımı Yok, Daha sonra Aylık 4% açılacak.
-        // YYYY:MM:DD HH:MM:SS (Yıl:Ay:Gün-Saat:Dakika:Saniye)
-        launchTime: LAUNCH_TIME,     // vesting başlangıcı (ilk claim edeceği zaman) x gün
-        waitingTime: MONTH_TIME * 3,             // ilk açılıştan sonraki bekleme süresi x gün
-        unlockPeriods: MONTH_TIME,             // ne kadarlık zaman diliminde açılacağı x gün
-        pool: func.numToParse("1000000000", 18) // Havuz Büyüklüğü:
+        launchTime: LAUNCH_TIME, 
+        waitingTime: MONTH_TIME * 3,
+        unlockPeriods: MONTH_TIME,
+        pool: func.numToParse("1000000000", 18)
     },
     privateSale: {
-        // TGE 10%, 3 Ay Kilit Açılımı Yok, Daha sonra Aylık 5% açılacak.
         contractName: "PrivateSale",
-        // Private Sale başlangıç zamanı
-        startTime: PRIVATESALE_START_TIME,                           
-        // Private Sale bitiş zamanı
-        endTime: PRIVATESALE_START_TIME + (60 * 60 * 24 * 14) ,
-        // vesting başlangıcı (ilk claim edeceği zaman) x gün
-        startVestingTime: LAUNCH_TIME ,
-        // ilk açılıştan sonraki bekleme süresi x gün (60 * 60 * 24 * 90) = 3 ay 
-        waitingTime: MONTH_TIME * 3,            
-        // ne kadarlık zaman diliminde açılacağı x gün (60 * 60 * 24 * 30) = 1 ay
+        startTime: PRIVATESALE_START_TIME,
+        endTime: PRIVATESALE_START_TIME + (60 * 60 * 24 * 14),
+        startVestingTime: LAUNCH_TIME,
+        waitingTime: MONTH_TIME * 3,
         unlockPeriods: MONTH_TIME,
-        pool: func.numToParse("2000000000", 18) // Havuz Büyüklüğü:
+        pool: func.numToParse("2000000000", 18)
     },
     stakingDao: {
-        /*
-        ❗ Pro Wallet Staking
-
-        Toplam Havuz Büyüklüğü: 1.000.000.000 
-        Zorunlu Stake Miktarı: 2.000.000 
-        Stake Oluşturma Üst Limiti: 1 
-        Günlük Ödül Dağılımı: 500.000 
-        */
         contractName: "StakingDAO",
-        launchTime: LAUNCH_TIME, // stake başlama tarihi
-        lockPeriod: MONTH_TIME * 24, // Kilit süresi 2 yıl
-        rewardPeriod: DAY_TIME, // ödül toplama zamanları 1 gün
+        launchTime: LAUNCH_TIME,
+        lockPeriod: MONTH_TIME * 24,
+        rewardPeriod: DAY_TIME,
         pool: func.numToParse("1000000000", 18),
     },
     stakingFlexible: {
         contractName: "StakingFlexible",
-        launchTime: LAUNCH_TIME, // stake başlama tarihi
-        rewardPeriod: DAY_TIME, // ödül toplama zamanları 1 gün
+        launchTime: LAUNCH_TIME,
+        rewardPeriod: DAY_TIME,
         pool: func.numToParse("750000000", 18),
     },
     stakingLock: {
         contractName: "StakingLock",
-        launchTime: LAUNCH_TIME, // stake başlama tarihi
+        launchTime: LAUNCH_TIME,
         pool: func.numToParse("750000000", 18),
-        penaltySecond: (60 * 60 * 24), // 1 gün kesinti hesaplama süresi
+        penaltySecond: (60 * 60 * 24),
         periods: {
             one: {
                 maturity: 1,
                 name: "1 Month",
                 apr: 4,
-                unlockTime: MONTH_TIME, // 1 ay
+                unlockTime: MONTH_TIME,
                 poolReward: func.numToParse("1875000", 18),
                 maxAccountStake: func.numToParse("500000", 18),
                 totalCap: func.numToParse("46875000", 18),
-                lateUnStakeFee: (60 * 60 * 24 * 7), // 1 hafta
+                lateUnStakeFee: (60 * 60 * 24 * 7),
             },
             three: {
                 maturity: 3,
                 name: "3 Month",
                 apr: 8,
-                unlockTime: MONTH_TIME * 3, // 3 ay
+                unlockTime: MONTH_TIME * 3,
                 poolReward: func.numToParse("5625000", 18),
                 maxAccountStake: func.numToParse("750000", 18),
                 totalCap: func.numToParse("70312000", 18),
-                lateUnStakeFee: (60 * 60 * 24 * 7), // 1 hafta
+                lateUnStakeFee: (60 * 60 * 24 * 7),
             },
             six: {
                 maturity: 6,
                 name: "6 Month",
                 apr: 12,
-                unlockTime: MONTH_TIME * 6, // 6 ay
+                unlockTime: MONTH_TIME * 6,
                 poolReward: func.numToParse("11250000", 18),
                 maxAccountStake: func.numToParse("1000000", 18),
                 totalCap: func.numToParse("93750000", 18),
-                lateUnStakeFee: (60 * 60 * 24 * 7 * 2), // 2 hafta
+                lateUnStakeFee: (60 * 60 * 24 * 7 * 2),
             },
             twelve: {
                 maturity: 12,
                 name: "12 Month",
                 apr: 16,
-                unlockTime: MONTH_TIME * 12, // 12 ay
+                unlockTime: MONTH_TIME * 12,
                 poolReward: func.numToParse("22500000", 18),
                 maxAccountStake: func.numToParse("2000000", 18),
                 totalCap: func.numToParse("140625000", 18),
-                lateUnStakeFee: (60 * 60 * 24 * 7 * 2), // 2 hafta
+                lateUnStakeFee: (60 * 60 * 24 * 7 * 2),
             },
         }
     },
     daoCategories: {
         GameFi: {
-            name: "GameFi", 
-            amount: func.numToParse("4500000000", 18),   // amount
-            tge: 50,                                // tge 1000/x
-            cliffTime: MONTH_TIME * 12,    // cliffTime
-            afterCliffUnlockPerThousand: 100,       // afterCliffUnlockPerThousand
-            unlockPeriods: MONTH_TIME,     // unlockPeriods
-            unlockPerThousand: 10                   // unlockPerThousand
+            name: "GameFi",
+            amount: func.numToParse("4500000000", 18),
+            tge: 50,
+            cliffTime: MONTH_TIME * 12,
+            afterCliffUnlockPerThousand: 100,
+            unlockPeriods: MONTH_TIME,
+            unlockPerThousand: 10
         },
         Metaverse: {
-            name: "Metaverse", 
-            amount: func.numToParse("4000000000", 18),   // amount
-            tge: 100,                               // tge 1000/x
-            cliffTime: MONTH_TIME * 12,    // cliffTime
-            afterCliffUnlockPerThousand: 300,       // afterCliffUnlockPerThousand
-            unlockPeriods: MONTH_TIME * 3, // unlockPeriods
-            unlockPerThousand: 30                   // unlockPerThousand
+            name: "Metaverse",
+            amount: func.numToParse("4000000000", 18),
+            tge: 100,
+            cliffTime: MONTH_TIME * 12,
+            afterCliffUnlockPerThousand: 300,
+            unlockPeriods: MONTH_TIME * 3,
+            unlockPerThousand: 30
         },
         Collaborations: {
-            name: "Collaborations", 
-            amount: func.numToParse("2250000000", 18),   // amount
-            tge: 200,                               // tge 1000/x
-            cliffTime: MONTH_TIME * 9,    // cliffTime
-            afterCliffUnlockPerThousand: 50,       // afterCliffUnlockPerThousand
-            unlockPeriods: MONTH_TIME, // unlockPeriods
-            unlockPerThousand: 50                   // unlockPerThousand
+            name: "Collaborations",
+            amount: func.numToParse("2250000000", 18),
+            tge: 200,
+            cliffTime: MONTH_TIME * 9,
+            afterCliffUnlockPerThousand: 50,
+            unlockPeriods: MONTH_TIME,
+            unlockPerThousand: 50
         },
         Investments: {
             name: "Investments",
-            amount: func.numToParse("3750000000", 18),   // amount
-            tge: 50,                               // tge 1000/x
-            cliffTime: MONTH_TIME * 6,    // cliffTime
-            afterCliffUnlockPerThousand: 10,       // afterCliffUnlockPerThousand
-            unlockPeriods: MONTH_TIME, // unlockPeriods
-            unlockPerThousand: 10                   // unlockPerThousand
+            amount: func.numToParse("3750000000", 18),
+            tge: 50,
+            cliffTime: MONTH_TIME * 6,
+            afterCliffUnlockPerThousand: 10,
+            unlockPeriods: MONTH_TIME,
+            unlockPerThousand: 10 
         },
         Marketing: {
-            name: "Marketing", 
-            amount: func.numToParse("1750000000", 18),   // amount
-            tge: 100,                               // tge 1000/x
-            cliffTime: MONTH_TIME * 12,    // cliffTime
-            afterCliffUnlockPerThousand: 10,       // afterCliffUnlockPerThousand
-            unlockPeriods: MONTH_TIME, // unlockPeriods
-            unlockPerThousand: 10                   // unlockPerThousand
+            name: "Marketing",
+            amount: func.numToParse("1750000000", 18),
+            tge: 100,
+            cliffTime: MONTH_TIME * 12,
+            afterCliffUnlockPerThousand: 10,
+            unlockPeriods: MONTH_TIME, 
+            unlockPerThousand: 10 
         },
         Development: {
-            name: "Development", 
-            amount: func.numToParse("1650000000", 18),   // amount
-            tge: 150,                               // tge 1000/x
-            cliffTime: MONTH_TIME * 3,    // cliffTime
-            afterCliffUnlockPerThousand: 25,       // afterCliffUnlockPerThousand
-            unlockPeriods: MONTH_TIME, // unlockPeriods
-            unlockPerThousand: 25                   // unlockPerThousand
+            name: "Development",
+            amount: func.numToParse("1650000000", 18),
+            tge: 150, 
+            cliffTime: MONTH_TIME * 3,
+            afterCliffUnlockPerThousand: 25,
+            unlockPeriods: MONTH_TIME,
+            unlockPerThousand: 25 
         },
         Charities: {
-            name: "Charities", 
-            amount: func.numToParse("1250000000", 18),   // amount
-            tge: 0,                               // tge 1000/x
-            cliffTime: MONTH_TIME * 3,    // cliffTime
-            afterCliffUnlockPerThousand: 10,       // afterCliffUnlockPerThousand
-            unlockPeriods: MONTH_TIME, // unlockPeriods
-            unlockPerThousand: 10                   // unlockPerThousand
+            name: "Charities",
+            amount: func.numToParse("1250000000", 18),
+            tge: 0,
+            cliffTime: MONTH_TIME * 3,
+            afterCliffUnlockPerThousand: 10,
+            unlockPeriods: MONTH_TIME, 
+            unlockPerThousand: 10 
         },
         Advisors: {
-            name: "Advisors", 
-            amount: func.numToParse("1350000000", 18),   // amount
-            tge: 50,                               // tge 1000/x
-            cliffTime: MONTH_TIME * 3,    // cliffTime
-            afterCliffUnlockPerThousand: 15,       // afterCliffUnlockPerThousand
-            unlockPeriods: MONTH_TIME, // unlockPeriods
-            unlockPerThousand: 15                   // unlockPerThousand
+            name: "Advisors",
+            amount: func.numToParse("1350000000", 18), 
+            tge: 50,
+            cliffTime: MONTH_TIME * 3,
+            afterCliffUnlockPerThousand: 15,
+            unlockPeriods: MONTH_TIME,
+            unlockPerThousand: 15
         },
         Treasury: {
-            name: "Treasury", 
-            amount: func.numToParse("10000000000", 18),   // amount
-            tge: 100,                               // tge 1000/x
-            cliffTime: MONTH_TIME * 12,    // cliffTime
-            afterCliffUnlockPerThousand: 50,       // afterCliffUnlockPerThousand
-            unlockPeriods: MONTH_TIME * 3, // unlockPeriods
-            unlockPerThousand: 50                   // unlockPerThousand
+            name: "Treasury",
+            amount: func.numToParse("10000000000", 18),
+            tge: 100, 
+            cliffTime: MONTH_TIME * 12, 
+            afterCliffUnlockPerThousand: 50, 
+            unlockPeriods: MONTH_TIME * 3,
+            unlockPerThousand: 50
         },
         Bounties: {
-            name: "Bounties", 
-            amount: func.numToParse("1000000000", 18),   // amount
-            tge: 1000,                               // tge 1000/x
-            cliffTime: 0,    // cliffTime
-            afterCliffUnlockPerThousand: 0,       // afterCliffUnlockPerThousand
-            unlockPeriods: 1, // unlockPeriods
-            unlockPerThousand: 0                   // unlockPerThousand
+            name: "Bounties",
+            amount: func.numToParse("1000000000", 18), 
+            tge: 1000,
+            cliffTime: 0, 
+            afterCliffUnlockPerThousand: 0,
+            unlockPeriods: 1,
+            unlockPerThousand: 0
         },
         SocialFi: {
-            name: "SocialFi", 
-            amount: func.numToParse("4250000000", 18),   // amount
-            tge: 1000,                               // tge 1000/x
-            cliffTime: 0,    // cliffTime
-            afterCliffUnlockPerThousand: 0,       // afterCliffUnlockPerThousand
-            unlockPeriods: 1, // unlockPeriods
-            unlockPerThousand: 0                   // unlockPerThousand
+            name: "SocialFi",
+            amount: func.numToParse("4250000000", 18),
+            tge: 1000,
+            cliffTime: 0,
+            afterCliffUnlockPerThousand: 0,
+            unlockPeriods: 1,
+            unlockPerThousand: 0
         },
 
 
     },
     team: {
         contractName: "Team",
-        // TGE 10%, 12 Ay kilit açılımı yok, ardından aylık 1% açılacak.
-        waitingTime: MONTH_TIME * 12,             // ilk açılıştan sonraki bekleme süresi x gün
-        unlockPeriods: MONTH_TIME,             // ne kadarlık zaman diliminde açılacağı x gün
-        pool: func.numToParse("7500000000", 18) // Havuz Büyüklüğü:
+        waitingTime: MONTH_TIME * 12,
+        unlockPeriods: MONTH_TIME,
+        pool: func.numToParse("7500000000", 18)
     },
     nftIds: holders.nftId,
     nftVote: holders.nftVote,
     nftName: holders.nftName,
     nftOwners: holders.nftOwners,
 }
-module.exports = {DATA};
+module.exports = { DATA };

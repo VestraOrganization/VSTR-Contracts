@@ -11,11 +11,9 @@ const opt = {
 }
 
 async function main() {
-  // Sözleşmenin ABI'si ve adresi
 
   const contractABI = require('../artifacts/contracts/' + opt.contractName + ".sol/" + opt.contractName + ".json");
 
-  // Sözleşmeyi etkileşim için hazırla
   const Contract = await ethers.getContractAt(contractABI.abi, adresses[network.name][opt.contractName]);
 
   console.log("Pending... Network:"+ network.name);

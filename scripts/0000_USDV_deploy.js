@@ -9,7 +9,6 @@ async function main() {
   const contract = await CONTRACT.deploy();
 
   await contract.waitForDeployment()
-  console.log("Contract address >>>: ", contract.target, "Netvork:", network.name);
   await saveContractAddress(DATA.USDV.contractName, contract.target);
 }
 

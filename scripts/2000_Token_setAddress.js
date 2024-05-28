@@ -9,10 +9,7 @@ const netWorkName = network.name;
 const opt = {
   owner:          DATA.deploy.ownerAddress,
   contractName:   DATA.token.contractName,
-  nftAddress:     adresses[netWorkName].CMLENFT,    
-  tokenAddress:   adresses[netWorkName].VDAOToken,
-  stakeDaoAddress: adresses[netWorkName].StakingDAO,
-  daoAddress:     adresses[netWorkName].VDAO
+  daoAddress:     DATA.deploy.daoAddress
 }
 
 
