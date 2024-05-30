@@ -165,7 +165,7 @@ contract PrivateSale is Ownable, ReentrancyGuard {
         address account = _msgSender();
         require(
             usdtAmount >= MIN_PURCHASE || _deposits[account] > 0,
-            "SALE:Purchasing amount must be minimum 700 USDT."
+            "SALE:Purchasing amount must be minimum 500 USDT."
         );
         require(
             (_deposits[account] + usdtAmount) <= MAX_PURCHASE,
