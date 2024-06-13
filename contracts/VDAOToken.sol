@@ -18,6 +18,7 @@ contract VDAOToken is
     Ownable,
     ERC20Permit
 {
+    event SetAddress(address daoAdress);
     // Address of the DAO contract
     address public dao;
 
@@ -58,7 +59,7 @@ contract VDAOToken is
     ) public override returns (bool) {
         require(
             recipient != address(0),
-            "VToken:Cannot transfer from the zero address."
+            "VToken:Cannot transfer to the zero address."
         );
         require(
             amount > 0,
@@ -82,7 +83,7 @@ contract VDAOToken is
         );
         require(
             amount > 0,
-            "VToken:Transfer amount must be greater than zero."
+            "VToken:Approval amount must be greater than zero."
         );
         require(!isBlackList(_msgSender()), "VToken:Account is blacklisted");
         return super.approve(spender, amount);
@@ -149,6 +150,11 @@ contract VDAOToken is
      * @param daoAddress Address of the DAO contract.
      */
     function setDaoAddress(address daoAddress) external onlyOwner {
+        require(
+            daoAddress != address(0),
+            "VToken:DAO address can not be zero."
+        );
         dao = daoAddress;
+        emit SetAddress(daoAddress); 
     }
 }

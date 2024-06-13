@@ -99,24 +99,24 @@ abstract contract DAOMechanisim is Ownable, ReentrancyGuard {
      * @dev Modifier to restrict function access to delegates only.
      */
     modifier onlyDelegate() {
-        require(isDelegate(msg.sender), "DAO:No delegate");
+        require(isDelegate(msg.sender), "DAO:Only delegates");
         _;
     }
     /**
      * @dev Modifier to restrict function access to whitelist Address only.
      */
-    modifier onlyWhiteListAddress(){
-        require(!isBlackListAddress(msg.sender),"DAO:This wallet is blacklisted"); 
+    modifier onlyWhiteListAddress(address account){
+        require(!isBlackListAddress(account),"DAO:This wallet is blacklisted"); 
         _;
     }
     /**
      * @dev Modifier to restrict function access to whitelist NFTs only.
      */
-    modifier onlyWhiteListNFT(){
-        uint256[] memory nfts = INFT(nft).holderNFTs(msg.sender);
+    modifier onlyWhiteListNFT(address account){
+        uint256[] memory nfts = INFT(nft).holderNFTs(account);
         for (uint i = 0; i < nfts.length; i++) {
             if (isBlackListNFT(nfts[i])) {
-                emit BlacklistedNFT(msg.sender, nfts[i]);
+                emit BlacklistedNFT(account, nfts[i]);
                 revert("DAO:This NFT is on the Blacklist");
             }
         }
@@ -329,6 +329,7 @@ abstract contract DAOCategories is DAOMechanisim {
         uint64 periodTime,
         uint16 periodRate
     ) external onlyOwner {
+        require(periodTime > 0, "DAO:CAT:Period time must be greater than zero.");
         Category storage cat = _categories[_categoryId];
         cat.id = _categoryId;
         cat.name = name;
@@ -355,18 +356,17 @@ abstract contract DAOCategories is DAOMechanisim {
         uint256 currentTime = block.timestamp;
         Category memory cat = _categories[categoryId];
         uint256 amount = cat.budget;
-        uint256 rateAmount = amount / 1000;
 
         if (currentTime >= LAUNCH_TIME) {
-            unlockAmount += rateAmount * cat.tge;
+            unlockAmount += (amount * cat.tge) / 1000;
         }
         if (currentTime >= LAUNCH_TIME + cat.cliffTime) {
-            unlockAmount += rateAmount * cat.cliffRate;
+            unlockAmount += (amount * cat.cliffRate) / 1000;
         }
         if (currentTime >= LAUNCH_TIME + cat.cliffTime + cat.periodTime) {
             uint256 _periods = (currentTime - (LAUNCH_TIME + cat.cliffTime)) /
                 cat.periodTime;
-            unlockAmount += rateAmount * cat.periodRate * _periods;
+            unlockAmount += (amount * cat.periodRate * _periods) / 1000;
         }
         return _min(unlockAmount, amount) - cat.used; 
     }
@@ -420,8 +420,8 @@ abstract contract DAOSafeList is DAOCategories {
     struct SwitchBlackListAddress {
         uint256 id;
         uint8 catId;
-        address account;
         uint64 startTime;
+        address account;
         address[] votes;
         bool listed;
         bool isCompleted;
@@ -683,9 +683,7 @@ abstract contract DAODelegates is DAOSafeList {
         _saveCandidateOfDelegate(account);
     }
     
-    function _saveCandidateOfDelegate(address account) private onlyWhiteListAddress onlyWhiteListNFT{
-        // mükerrer kayıt engellenecek
-        
+    function _saveCandidateOfDelegate(address account) private onlyWhiteListAddress(account) onlyWhiteListNFT(account){
         uint64 currentTime = uint64(block.timestamp);
 
         require(currentTime > electionTime && currentTime < _candidateApplicationEnd(),"DAO:DLG:We are not in candidate application period!");
@@ -708,21 +706,22 @@ abstract contract DAODelegates is DAOSafeList {
      * @notice Pro (200VP) & regular (1VP) wallets and NFT (600VP) holders can vote only.
      * @param candidateAccount Address you want to vote.
      */
-    function voteToCandidate (address candidateAccount) external nonReentrant onlyWhiteListAddress {
+    function voteToCandidate (address candidateAccount) external nonReentrant {
+        address account = _msgSender();
+        require(!isBlackListAddress(account), "DAO:DLG:Address in blacklist cannot vote.");
         uint64 currentTime = uint64(block.timestamp);
         require(currentTime > _candidateApplicationEnd() && currentTime < _endVotingElectionTime(),"DAO:DLG: We are not in voting period!");
         uint64 currentPeriod = getCurrentPeriod();
         (bool candidate, uint16 key) = isCandidate(currentPeriod, candidateAccount);
         require(candidate,"DAO:DLG:This wallet is not a candidate.");
 
-        address account = _msgSender();
         uint256[] memory _nfts = INFT(nft).holderNFTs(account);
 
         uint256 _votingPower;
         for (uint i = 0; i < _nfts.length; i++) {
             uint256 nftId = _nfts[i];
             // If user is not voted and is not minted his NFT's
-            if(!isVotedNFT[currentPeriod][nftId]){
+            if(!isVotedNFT[currentPeriod][nftId] && !isBlackListNFT(nftId)){
                 _votingPower += _nftVotingPower(nftId);
                 isVotedNFT[currentPeriod][nftId] = true;
             }
@@ -745,9 +744,12 @@ abstract contract DAODelegates is DAOSafeList {
      */
 
     function endElection () external nonReentrant {
-        require(block.timestamp > _endVotingElectionTime(),"DAO:DLG:Election process is still continue.");
-        uint64 currentPeriod = getCurrentPeriod();
-        uint16 totalCandidates = candidateCounter[currentPeriod];
+        uint64 currentPeriod = getCurrentPeriod(); 
+        uint64 currentTime = uint64(block.timestamp); 
+        uint16 totalCandidates = candidateCounter[currentPeriod]; 
+        require(currentTime > _endVotingElectionTime() || 
+        (currentTime > _candidateApplicationEnd() && totalCandidates <= DELEGATE_COUNT), 
+        "DAO:DLG:Election process is still continue.");
         uint64 lastPeriod = ((electionTime - LAUNCH_TIME) / MANAGEMENT_PERIOD) - 1;
 
         if (totalCandidates >= DELEGATE_COUNT) {
@@ -796,6 +798,12 @@ abstract contract DAODelegates is DAOSafeList {
     function setFirstDelegates(address[] memory firstDelegates) external onlyOwner {
         require(_delegates[0].length == 0, "DAO:DLG:Delegates already added.");
         require(firstDelegates.length == DELEGATE_COUNT, "DAO:DLG:Must initialize with 7 delegates.");
+
+        for (uint256 i = 0; i < firstDelegates.length; i++) {
+            for (uint256 j = i + 1; j < firstDelegates.length; j++) {
+                require(firstDelegates[i] != firstDelegates[j], "DAO:DLG:Duplicate delegate address found.");
+            }
+        }
         _setNewDelegates(firstDelegates, 0);
     }
 
@@ -825,7 +833,7 @@ abstract contract DAODelegates is DAOSafeList {
         uint64 currentPeriod = getCurrentPeriod();
         require(period <= currentPeriod,"DAO:DLG:Wrong period entered!");
         address[] memory delegates = new address[](DELEGATE_COUNT);
-        for (uint i = 0; i < 7; i++) {
+        for (uint i = 0; i < DELEGATE_COUNT; i++) {
             delegates[i] = _delegates[period][i];
         }
         return delegates;
@@ -872,7 +880,6 @@ abstract contract DAODelegates is DAOSafeList {
      * @dev Candidate Application End time.
      */
     function _candidateApplicationEnd() private view returns(uint64){
-        //  aday başvuru sonu
         return _candidateApplicationStart() + CANDIDATE_APPLY_TIME; 
     }
 
@@ -914,7 +921,7 @@ abstract contract DAOProposals is DAODelegates{
         uint256 amount;
         uint64 startTime;
         address[] votes;
-        bool isComleted;
+        bool isCompleted;
     }
 
 
@@ -925,7 +932,7 @@ abstract contract DAOProposals is DAODelegates{
         uint256 no;
         uint256 abstain;
         address[] votes;
-        bool isComleted;
+        bool isCompleted;
     }
     uint256 public lastVipId;
     uint256 public fundId;
@@ -956,7 +963,7 @@ abstract contract DAOProposals is DAODelegates{
         uint64 currentTime = uint64(block.timestamp);
         VotedProposalList storage vote = _proposalVoting[vipId];  
 
-        require(!vote.isComleted, "DAO:VOTE:This vipId is completed!");
+        require(!vote.isCompleted, "DAO:VOTE:This vipId is completed!");
         require(
             currentTime <= vote.startTime + PROPOSAL_VOTING_TIME,
             "DAO:VOTE:Fund selection expired."
@@ -966,7 +973,7 @@ abstract contract DAOProposals is DAODelegates{
 
         vote.votes.push(delegate);
         if (_proposalVoting[vipId].votes.length == SUCCESS_COUNT) {
-            vote.isComleted = true; 
+            vote.isCompleted = true; 
         }
     }
 
@@ -984,7 +991,7 @@ abstract contract DAOProposals is DAODelegates{
         uint256 amount
     ) external onlyDelegate nonReentrant {
 
-        require(_proposalVoting[vipId].isComleted, "DAO:PRP:vipId is unconfirmed!");
+        require(_proposalVoting[vipId].isCompleted, "DAO:PRP:vipId is unconfirmed!");
         require(!isBlackListAddress(account), "DAO:PRP:Account is blacklisted.");
         require(
             _funds[vipId].startTime == 0,
@@ -995,7 +1002,6 @@ abstract contract DAOProposals is DAODelegates{
             freeAmount >= amount,
             "DAO:PRP:There are not enough unlock tokens"
         );
-        fundId++;
         FundList storage fund = _funds[fundId]; 
         fund.vipId = vipId;
         fund.categoryId = categoryId;
@@ -1003,6 +1009,7 @@ abstract contract DAOProposals is DAODelegates{
         fund.amount = amount;
         fund.startTime = uint64(block.timestamp);
         fund.votes.push(_msgSender());
+        fundId++;
 
         emit CreateFund(
             vipId,
@@ -1024,7 +1031,7 @@ abstract contract DAOProposals is DAODelegates{
             currentTime <= fund.startTime + PROPOSAL_VOTING_TIME,
             "DAO:PRP:Fund selection expired" 
         );
-        require(!fund.isComleted, "DAO:PRP:This proposal is completed");
+        require(!fund.isCompleted, "DAO:PRP:This proposal is completed");
 
         address delegate = _msgSender();
 
@@ -1033,7 +1040,7 @@ abstract contract DAOProposals is DAODelegates{
         fund.votes.push(delegate);
 
         if (fund.votes.length >= SUCCESS_COUNT) {
-            fund.isComleted = true;
+            fund.isCompleted = true; 
 
             _categories[fund.categoryId].used += fund.amount;
             SafeERC20.safeTransfer(IERC20(token), fund.account, fund.amount);
@@ -1112,6 +1119,7 @@ abstract contract DAOProposals is DAODelegates{
  * @dev Contract representing a Decentralized Autonomous Organization (DAO) with mechanisms and proposals.
  */
 contract VDAO is DAOProposals {
+    event SetAddresses(address token, address nft, address stake);
     /**
      * @dev Constructor to initialize VDAO contract.
      * @param initialOwner Address of the initial owner.
@@ -1150,8 +1158,22 @@ contract VDAO is DAOProposals {
         address nftAddress,
         address stakeAddress
     ) external onlyOwner {
+        require(
+            tokenAddress != address(0),
+            "DAO:Token address can not be zero."
+        );
+        require(
+            nftAddress != address(0),
+            "DAO:NFT address can not be zero."
+        );
+        require(
+            stakeAddress != address(0),
+            "DAO:Stake address can not be zero."
+        );
         token = tokenAddress;
         nft = nftAddress;
         stake = stakeAddress;
+
+        emit SetAddresses(token, nft, stake);
     }
 }
