@@ -35,7 +35,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
     event RemainingClaim(address indexed owner, uint256 amount);
     event IncreasePool(address indexed owner, uint256 amount);
 
-    address public token;
+    address public immutable token;
 
 
     uint256 constant private RW_BURN_AMOUNT = 10_000 * TOKEN_DECIMAL; // Regular Wallet burn amount
@@ -46,7 +46,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
     uint256 internal constant REG_WOTING = 1;
 
     uint64 internal immutable LAUNCH_TIME;
-    uint256 internal immutable LOCK_PERIOD; // 2 years
+    uint64 internal immutable LOCK_PERIOD; // 2 years 
     uint256 internal constant STAKE_AMOUNT = 2_000_000 * TOKEN_DECIMAL;
     uint256 internal constant PENALTY = 20; // 20% penalty for early withdrawal
     uint256 internal constant DAILY_REWARD = 500_000 * TOKEN_DECIMAL;
@@ -60,7 +60,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
     uint64 internal _lastUpdateDay; 
 
     struct Stake {
-        uint256 startTime;
+        uint64 startTime;
         uint256 lastClaimTime;
         uint256 totalClaim;
         uint64 epochDay;
@@ -104,6 +104,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
         );
 
         token = tokenAddress;
+        // Token will be sent in to contract amount of poolsize when its deployed.
         _poolSize = pool;
         LAUNCH_TIME = launchTime;
         LOCK_PERIOD = lockPeriod;
@@ -124,7 +125,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
 
     /**
      * @notice Allows a user to stake tokens using permit signature.
-     * @param owner The owner of the tokens.
+     * @param account The owner of the tokens. 
      * @param amount The amount of tokens to stake.
      * @param deadline The deadline for the permit signature.
      * @param v The `v` component of the permit signature.
@@ -132,7 +133,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
      * @param s The `s` component of the permit signature.
      */
     function stakeWithPermit(
-        address owner,
+        address account,
         uint256 amount,
         uint256 deadline,
         uint8 v,
@@ -144,7 +145,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
             "STAKE:PRO:Exactly 2 milion token must be staked."
         );
         IERC20Permit(token).permit(
-            owner,
+            account,
             address(this),
             amount,
             deadline,
@@ -152,7 +153,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
             r,
             s
         );
-        _stake(owner);
+        _stake(account); 
     }
     /**
      * @dev Internal function for staking tokens.
@@ -160,7 +161,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
      */
     function _stake(address account) private {
         // Ensure staking time has started
-        uint256 currentTime = block.timestamp;
+        uint64 currentTime = uint64(block.timestamp);
         require(
             currentTime >= LAUNCH_TIME,
             "STAKE:PRO:Staking time has not started yet."
@@ -234,7 +235,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
         // Ensure user has an active stake
         require(user.isActive, "STAKE:PRO:No active stake");
 
-        uint256 currentTime = block.timestamp;
+        uint64 currentTime = uint64(block.timestamp);
         uint64 currentDay = _currentDay();
 
         // Ensure user cannot unstake before their period is up
@@ -245,7 +246,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
 
         uint256 penaltyAmount;
         if (currentTime < user.startTime + LOCK_PERIOD) {
-            penaltyAmount = (STAKE_AMOUNT / 100) * PENALTY;
+            penaltyAmount = PENALTY * (STAKE_AMOUNT / 100);
             _poolSize += penaltyAmount;
             emit Withdrawn(account, penaltyAmount);
         }
@@ -293,8 +294,9 @@ contract StakingDAO is Ownable, ReentrancyGuard {
      * @param account Transfer token to account
      */
     function remainingClaim(address account) external onlyOwner nonReentrant {
-        require(_currentDay() > _totalPeriod(), "STAKE:PRO:Distribution is still continue.");
+        require(_currentDay() >= _totalPeriod(), "STAKE:PRO:Distribution is still continue.");
         IERC20(token).safeTransfer(account, _poolSize);
+        _poolSize = 0; 
         emit RemainingClaim(account, _poolSize);
     }
 
@@ -321,15 +323,16 @@ contract StakingDAO is Ownable, ReentrancyGuard {
         uint64 epochDay,
         uint64 claimDay
     ) internal view returns (uint256) {
-        // uint64 claimDay = _currentDay();
         uint256 totalReward;
-        uint256 lastUser;
+        uint256 lastUsers;
         for (uint64 i = epochDay; i < claimDay; i++) {
             uint256 dayUser = daysUser[i];
             if (dayUser != 0) {
-                lastUser = dayUser;
+                lastUsers = dayUser;
             }
-            totalReward += DAILY_REWARD / lastUser;
+            if(lastUsers > 0){
+                totalReward += DAILY_REWARD / lastUsers; 
+            }
         }
         return totalReward;
     }
@@ -357,7 +360,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
             return 0;
         }
         if (currentTime >= _endTime()) {
-            return uint64(_totalPeriod());
+            return _totalPeriod(); 
         }
         return (currentTime - LAUNCH_TIME) / REWARD_PERIOD;
     }
@@ -365,14 +368,14 @@ contract StakingDAO is Ownable, ReentrancyGuard {
      * @dev Calculates the total period of the stake contract.
      * @return The total period of the stake contract.
      */
-    function _totalPeriod() internal view returns (uint256) {
-        return ((_poolSize + _totalClaimedReward) / DAILY_REWARD) + 1;
+    function _totalPeriod() internal view returns (uint64) { 
+        return uint64(((_poolSize + _totalClaimedReward) / DAILY_REWARD) + 1);
     }
     /**
      * @dev Calculates the end timestamp of the stake contract.
      * @return The end timestamp of the stake contract.
      */
-    function _endTime() internal view returns (uint256) {
+    function _endTime() internal view returns (uint64) { 
         return LAUNCH_TIME + (_totalPeriod() * REWARD_PERIOD);
     }
 
@@ -449,7 +452,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
             unlockAmount = _calculateReward(user.epochDay, _currentDay());
             nextUnlockTime = _nextRewardTime(user.epochDay);
             nextUnlockAmount = DAILY_REWARD / (_totalStaked / STAKE_AMOUNT);
-            endTime = user.startTime + LOCK_PERIOD;
+            endTime = user.startTime + LOCK_PERIOD; 
         }
     }
 
@@ -558,6 +561,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
      * @param account Address of the account to add voting power to.
      */
     function _addVotingPower(address account) internal {
+        require(!_votingRegWallet[account], "STAKE:REGULAR:This address is already a regular wallet.");
         ITokenBurn(token).burnFrom(account, RW_BURN_AMOUNT);
         _votingRegWallet[account] = true;
         emit RegularWallet(account, RW_BURN_AMOUNT, REG_WOTING);
