@@ -104,7 +104,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
         );
 
         token = tokenAddress;
-        // Token will be sent in to contract amount of poolsize.
+        // Token will be sent in to contract amount of poolsize when its deployed.
         _poolSize = pool;
         LAUNCH_TIME = launchTime;
         LOCK_PERIOD = lockPeriod;
@@ -561,6 +561,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
      * @param account Address of the account to add voting power to.
      */
     function _addVotingPower(address account) internal {
+        require(!_votingRegWallet[account], "STAKE:REGULAR:This address is already a regular wallet.");
         ITokenBurn(token).burnFrom(account, RW_BURN_AMOUNT);
         _votingRegWallet[account] = true;
         emit RegularWallet(account, RW_BURN_AMOUNT, REG_WOTING);

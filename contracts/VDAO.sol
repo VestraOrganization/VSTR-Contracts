@@ -364,6 +364,7 @@ abstract contract DAOCategories is DAOMechanisim {
             unlockAmount += (amount * cat.cliffRate) / 1000;
         }
         if (currentTime >= LAUNCH_TIME + cat.cliffTime + cat.periodTime) {
+            // periodTime will be sent in to contract when its deployed.
             uint256 _periods = (currentTime - (LAUNCH_TIME + cat.cliffTime)) /
                 cat.periodTime;
             unlockAmount += (amount * cat.periodRate * _periods) / 1000;
