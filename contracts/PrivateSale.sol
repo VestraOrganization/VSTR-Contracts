@@ -348,8 +348,7 @@ contract PrivateSale is Ownable, ReentrancyGuard {
         );
 
         //Checking the amount of token
-        uint256 maxWithdrawAmount = (TOTAL_ALLOCATION -
-            Math.ceilDiv(_totalInvestment, TOKEN_PRICE)) * TOKEN_DECIMALS;
+        uint256 maxWithdrawAmount = TOTAL_ALLOCATION - (Math.ceilDiv(_totalInvestment, TOKEN_PRICE) * TOKEN_DECIMALS);
         require(
             withdrawTokenAmount + tokenAmount <= maxWithdrawAmount,
             "SALE:withdrawToken:You have exceed the maximum token withdraw amount."
