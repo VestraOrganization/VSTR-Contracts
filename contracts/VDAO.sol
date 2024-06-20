@@ -1004,12 +1004,14 @@ abstract contract DAOProposals is DAODelegates{
             "DAO:PRP:There are not enough unlock tokens"
         );
         FundList storage fund = _funds[fundId]; 
+        fund.id = fundId;
         fund.vipId = vipId;
         fund.categoryId = categoryId;
         fund.account = account;
         fund.amount = amount;
         fund.startTime = uint64(block.timestamp);
         fund.votes.push(_msgSender());
+        
         fundId++;
 
         emit CreateFund(
