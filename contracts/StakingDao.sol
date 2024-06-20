@@ -45,30 +45,30 @@ contract StakingDAO is Ownable, ReentrancyGuard {
     uint256 internal constant PRO_WOTING = 200;
     uint256 internal constant REG_WOTING = 1;
 
-    uint64 internal immutable LAUNCH_TIME;
-    uint64 internal immutable LOCK_PERIOD; // 2 years 
+    uint256 internal immutable LAUNCH_TIME;
+    uint256 internal immutable LOCK_PERIOD; // 2 years 
     uint256 internal constant STAKE_AMOUNT = 2_000_000 * TOKEN_DECIMAL;
     uint256 internal constant PENALTY = 20; // 20% penalty for early withdrawal
     uint256 internal constant DAILY_REWARD = 500_000 * TOKEN_DECIMAL;
-    uint64 internal immutable REWARD_PERIOD;
+    uint256 internal immutable REWARD_PERIOD;
 
     uint256 internal _poolSize;
     uint256 internal _totalStaked;
     uint256 internal _totalClaimedReward;
 
 
-    uint64 internal _lastUpdateDay; 
+    uint256 internal _lastUpdateDay; 
 
     struct Stake {
-        uint64 startTime;
+        uint256 startTime;
         uint256 lastClaimTime;
         uint256 totalClaim;
-        uint64 epochDay;
+        uint256 epochDay;
         bool isActive;
     }
     
     mapping(address => Stake) internal stakes;
-    mapping(uint64 => uint256) internal daysUser;
+    mapping(uint256 => uint256) internal daysUser;
 
     mapping(address => bool) internal _votingProWallet; // PRO Wallet
     mapping(address => bool) internal _votingRegWallet; // Regular Wallet
@@ -86,9 +86,9 @@ contract StakingDAO is Ownable, ReentrancyGuard {
         address initialOwner,
         address tokenAddress,
         uint256 pool,
-        uint64 launchTime,
-        uint64 lockPeriod,
-        uint64 rewardPeriod
+        uint256 launchTime,
+        uint256 lockPeriod,
+        uint256 rewardPeriod
     ) Ownable(initialOwner) {
         require(
             initialOwner != address(0),
@@ -99,7 +99,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
             "STAKE:PRO:Token address cannot be zero."
         );
         require(
-            launchTime > uint64(block.timestamp),
+            launchTime > block.timestamp,
             "STAKE:PRO:Launch time must be greater than present time."
         );
 
@@ -161,14 +161,14 @@ contract StakingDAO is Ownable, ReentrancyGuard {
      */
     function _stake(address account) private {
         // Ensure staking time has started
-        uint64 currentTime = uint64(block.timestamp);
+        uint256 currentTime = block.timestamp;
         require(
             currentTime >= LAUNCH_TIME,
             "STAKE:PRO:Staking time has not started yet."
         );
 
         // Ensure staking period is still active
-        uint64 currentDay = _currentDay();
+        uint256 currentDay = _currentDay();
         require(
             currentDay < _totalPeriod(),
             "STAKE:PRO:All tokens have been distributed."
@@ -208,7 +208,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
         address account = _msgSender();
         Stake storage user = stakes[account];
         require(user.isActive, "STAKE:PRO:You have none staked tokens.");
-        uint64 currentDay = _currentDay();
+        uint256 currentDay = _currentDay();
         _update(currentDay);
         uint256 reward = _calculateReward(user.epochDay, currentDay);
         require(reward > 0, "STAKE:PRO:No reward have been earned yet.");
@@ -235,8 +235,8 @@ contract StakingDAO is Ownable, ReentrancyGuard {
         // Ensure user has an active stake
         require(user.isActive, "STAKE:PRO:No active stake");
 
-        uint64 currentTime = uint64(block.timestamp);
-        uint64 currentDay = _currentDay();
+        uint256 currentTime = block.timestamp;
+        uint256 currentDay = _currentDay();
 
         // Ensure user cannot unstake before their period is up
         require(
@@ -295,6 +295,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
      */
     function remainingClaim(address account) external onlyOwner nonReentrant {
         require(_currentDay() >= _totalPeriod(), "STAKE:PRO:Distribution is still continue.");
+        require(_totalStaked / STAKE_AMOUNT == 0, "STAKE:PRO:There is still pro wallet account at the contract.");
         IERC20(token).safeTransfer(account, _poolSize);
         _poolSize = 0; 
         emit RemainingClaim(account, _poolSize);
@@ -307,7 +308,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
      * @dev Updates the stake contract for the given day if necessary.
      * @param day The day to update the contract for.
      */
-    function _update(uint64 day) internal {
+    function _update(uint256 day) internal {
         if (_lastUpdateDay <= day) {
             daysUser[day] = _totalStaked / STAKE_AMOUNT;
             _lastUpdateDay = day;
@@ -320,12 +321,12 @@ contract StakingDAO is Ownable, ReentrancyGuard {
      * @return The total reward for the given period.
      */
     function _calculateReward(
-        uint64 epochDay,
-        uint64 claimDay
+        uint256 epochDay,
+        uint256 claimDay
     ) internal view returns (uint256) {
         uint256 totalReward;
         uint256 lastUsers;
-        for (uint64 i = epochDay; i < claimDay; i++) {
+        for (uint256 i = epochDay; i < claimDay; i++) {
             uint256 dayUser = daysUser[i];
             if (dayUser != 0) {
                 lastUsers = dayUser;
@@ -337,11 +338,11 @@ contract StakingDAO is Ownable, ReentrancyGuard {
         return totalReward;
     }
     /**
-     * @dev Calculates the timestamp for the next reward distribution.
+     * @dev Calculates the timestamp for the next reward distribution. 
      * @param epochDay The epoch day to calculate the next reward for.
      * @return The timestamp for the next reward distribution.
      */
-    function _nextRewardTime(uint64 epochDay) internal view returns (uint256) {
+    function _nextRewardTime(uint256 epochDay) internal view returns (uint256) {
         uint256 daysPassed = (block.timestamp - LAUNCH_TIME) / REWARD_PERIOD;
         if (_currentDay() >= epochDay) {
             daysPassed += 1;
@@ -354,8 +355,8 @@ contract StakingDAO is Ownable, ReentrancyGuard {
      * @dev Retrieves the current epoch day.
      * @return The current epoch day.
      */
-    function _currentDay() internal view returns (uint64) {
-        uint64 currentTime = uint64(block.timestamp);
+    function _currentDay() internal view returns (uint256) {
+        uint256 currentTime = block.timestamp;
         if (LAUNCH_TIME > currentTime) {
             return 0;
         }
@@ -368,14 +369,14 @@ contract StakingDAO is Ownable, ReentrancyGuard {
      * @dev Calculates the total period of the stake contract.
      * @return The total period of the stake contract.
      */
-    function _totalPeriod() internal view returns (uint64) { 
-        return uint64(((_poolSize + _totalClaimedReward) / DAILY_REWARD) + 1);
+    function _totalPeriod() internal view returns (uint256) { 
+        return ((_poolSize + _totalClaimedReward) / DAILY_REWARD) + 1;
     }
     /**
      * @dev Calculates the end timestamp of the stake contract.
      * @return The end timestamp of the stake contract.
      */
-    function _endTime() internal view returns (uint64) { 
+    function _endTime() internal view returns (uint256) { 
         return LAUNCH_TIME + (_totalPeriod() * REWARD_PERIOD);
     }
 
@@ -432,7 +433,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
             uint256 unlockAmount,
             uint256 nextUnlockTime,
             uint256 nextUnlockAmount,
-            uint64 epochDay,
+            uint256 epochDay,
             uint256 endTime,
             uint256 power,
             bool isActive
@@ -471,10 +472,10 @@ contract StakingDAO is Ownable, ReentrancyGuard {
      * @return rwTotalBurnAmount Total amount burned from regular wallets.
      */
      function info() public view returns(
-        uint64 launchTime,
-        uint64 rewardPeriod,
-        uint64 lastUpdateDay,
-        uint64 currentDay,
+        uint256 launchTime,
+        uint256 rewardPeriod,
+        uint256 lastUpdateDay,
+        uint256 currentDay,
         uint256 poolSize,
         uint256 dailyReward,
         uint256 totalStaked,
@@ -501,9 +502,9 @@ contract StakingDAO is Ownable, ReentrancyGuard {
      * @param day The day for which to retrieve the user count.
      * @return The number of users on the specified day.
      */
-    function getDayUser(uint64 day) public view returns(uint256) {
+    function getDayUser(uint256 day) public view returns(uint256) {
 
-        uint64 currentDay = day;
+        uint256 currentDay = day;
         while (true) {
             if (daysUser[currentDay] != 0) {
                 return daysUser[currentDay];
