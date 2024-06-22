@@ -22,7 +22,7 @@ contract StakingFlexible is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Math for uint256;
 
-    IERC20 public token;
+    IERC20 public immutable token;
 
     uint256 internal constant RATE_CAL = 1e10;
     uint256 internal constant TOKEN_DECIMAL = 1e18;
@@ -172,13 +172,14 @@ contract StakingFlexible is Ownable, ReentrancyGuard {
         user.totalClaim += reward;
         user.isActive = false;
 
-        _update(currentDay + 1);
-
         _countUsers--;
-        _totalStaked -= amount;
         _totalClaimedReward += reward;
+        _totalStaked -= amount;
 
+        _update(currentDay + 1);
+        
         token.safeTransfer(account, amount + reward);
+
         emit UnStake(account, amount, reward);
     }
     /**
@@ -422,9 +423,9 @@ contract StakingFlexible is Ownable, ReentrancyGuard {
             if (dayRate != 0) {
                 lastRate = dayRate;
             }
-            totalReward += (stakeAmount / RATE_CAL) * lastRate;
+            totalReward += stakeAmount * lastRate; 
         }
-        return totalReward;
+        return totalReward / RATE_CAL;
     }
     /**
      * @dev Updates the contract state for the current day.
@@ -457,7 +458,10 @@ contract StakingFlexible is Ownable, ReentrancyGuard {
      * @return The current rate.
      */
     function _currentRate() internal view returns (uint256) {
-        return (DAILY_REWARD * RATE_CAL) / _totalStaked;
+        if(_totalStaked > 0){
+            return (DAILY_REWARD * RATE_CAL) / _totalStaked;
+        }
+        return 0;
     }
 
 
