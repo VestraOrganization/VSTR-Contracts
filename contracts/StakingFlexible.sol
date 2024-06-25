@@ -187,6 +187,7 @@ contract StakingFlexible is Ownable, ReentrancyGuard {
      */
     
     function rewardToStake() external nonReentrant {
+        require(_endTime() > block.timestamp, "STAKE:FLEX:The contract has expired.");
         Stake storage user = stakes[_msgSender()];
         require(user.isActive, "STAKE:FLEX:You have none staked tokens.");
         uint64 currentDay = _currentDay() + 1;
@@ -214,7 +215,9 @@ contract StakingFlexible is Ownable, ReentrancyGuard {
      */
     function remainingClaim(address to) external onlyOwner nonReentrant {
         require(block.timestamp > _endTime(), "STAKE:FLEX:Distribution is still continue.");
+        require(_countUsers == 0, "STAKE:FLEX:There is still active an account at the contract.");
         token.safeTransfer(to, _poolSize);
+        _poolSize = 0;
         emit RemainingClaim(to, _poolSize);
     }
     /**
