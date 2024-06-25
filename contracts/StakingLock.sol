@@ -30,7 +30,7 @@ contract StakingLock is Ownable, ReentrancyGuard {
 
     using SafeERC20 for IERC20;
     // Token address
-    address public token;
+    address public immutable token;
 
     // Constants
     uint64 immutable LAUNCH_TIME;
@@ -39,7 +39,7 @@ contract StakingLock is Ownable, ReentrancyGuard {
     // Constants for calculations
     uint256 internal constant TOKEN_DECIMAL = 1e18;
     uint256 internal constant MIN_STAKE_AMOUNT = 10_000 * TOKEN_DECIMAL;
-
+    uint256 public poolSize = 750_000_000 * TOKEN_DECIMAL;
     // Modifiers
 
     /**
@@ -161,10 +161,6 @@ contract StakingLock is Ownable, ReentrancyGuard {
      * @notice Function to stake tokens
      */
     function stake(uint256 amount, uint8 maturity) external nonReentrant onlyMaturity(maturity) {
-        require(
-            IERC20(token).allowance(_msgSender(), address(this)) >= amount,
-            "STAKE:FLEX:Insufficient allowance."
-        );
         _stake(_msgSender(), amount, maturity);
     }
 
@@ -250,7 +246,7 @@ contract StakingLock is Ownable, ReentrancyGuard {
             Stake memory user = stakes[account][maturityItems[i]];
 
             MaturityData memory data = maturities[maturityItems[i]];
-            uint256 yield = _aprCalculate(user.stakeAmount, data.apr, maturityItems[i]);
+            uint256 yield = _aprCalculate(user.stakeAmount, data.apr);
             userStakes[counter] = AccountInfo({
                 name: data.name,
                 maturity: maturityItems[i],
@@ -312,10 +308,6 @@ contract StakingLock is Ownable, ReentrancyGuard {
             amount >= MIN_STAKE_AMOUNT,
             "STAKE:LOCK:minimum 10,000 stakes must be staked"
         );
-        require(
-            IERC20(token).balanceOf(account) >= amount,
-            "STAKE:LOCK:Insufficient balance"
-        );
 
         Stake storage user = stakes[account][maturity];
         require(
@@ -324,22 +316,24 @@ contract StakingLock is Ownable, ReentrancyGuard {
         );
 
         MaturityData storage data = maturities[maturity];
-        uint256 yield = _aprCalculate(amount, data.apr, maturity);
+        uint256 yield = _aprCalculate(amount, data.apr);
 
         require(
+            yield <= poolSize,
+            "STAKE:LOCK:There is not enough token to meet your reward. Try other stake options."
+        );
+        
+        require(
             amount <= data.maxAccountStake,
-            "STAKE:LOCK:1 Month Stake Maximum Limit per Participant Exceeded"
+            "STAKE:LOCK:Month Stake Maximum Limit per Participant Exceeded"
         );
         require(
             data.totalStaked + amount <= data.totalCap,
             "STAKE:LOCK:The total monthly value of participants exceeds"
         );
-        require(
-            yield + data.totalYield <= data.poolReward,
-            "STAKE:LOCK:Total reward claim exceeded"
-        );
 
         IERC20(token).safeTransferFrom(account, address(this), amount);
+        poolSize -= yield;
 
         data.totalStaked += amount;
         data.countUser++;
@@ -359,9 +353,8 @@ contract StakingLock is Ownable, ReentrancyGuard {
      */
     function _aprCalculate(
         uint256 amount,
-        uint256 apr,
-        uint256 maturity
+        uint256 apr
     ) internal pure returns (uint256) {
-        return ((amount * apr) / 100 / 12) * maturity;
+        return (amount * apr / 100);
     }
 }
