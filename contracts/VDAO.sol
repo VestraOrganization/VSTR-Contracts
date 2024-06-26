@@ -80,11 +80,11 @@ abstract contract DAOMechanisim is Ownable, ReentrancyGuard {
 
     // Election
     uint64 internal immutable LAUNCH_TIME;
-    uint64 internal immutable MANAGEMENT_PERIOD; // Duration of the election period.
+    uint64 internal immutable MANAGEMENT_PERIOD; // Duration of the management period for delegates (3 years).
     uint64 internal immutable CANDIDATE_APPLY_TIME; // Duration of the candidate application period.
     uint64 internal immutable CANDIDATE_VOTING_TIME; // Duration of the candidate voting period.
     uint64 internal immutable PROPOSAL_VOTING_TIME; // Duration of the proposal voting period.
-    uint256 internal constant BURN_AMOUNT = 10_000 * 1e18; // Delege başvurusu için yakılacak token miktarı
+    uint256 internal constant BURN_AMOUNT = 10_000 * 1e18; // Burn amount application of delegate
     uint16 internal immutable DELEGATE_COUNT = 7;
 
     uint64 internal electionTime; // Next election start time
@@ -146,6 +146,7 @@ abstract contract DAOMechanisim is Ownable, ReentrancyGuard {
             launchTime > uint64(block.timestamp),
             "DAO:Staking start time must be greater than present time"
         );
+        require(electionPeriod > candTime + candVotingTime, "DAO:Invalid setup");
 
         LAUNCH_TIME = launchTime;
         electionTime = launchTime + electionPeriod;
