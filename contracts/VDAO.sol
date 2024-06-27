@@ -486,6 +486,7 @@ abstract contract DAOSafeList is DAOCategories {
     ) external onlyDelegate nonReentrant {
         uint64 currentTime = uint64(block.timestamp);
         SwitchBlackListAddress storage prAddress = _daoBlockAddress[id];
+        require(!prAddress.isCompleted, "DAO:BL:Proposal already completed");
         require(
             currentTime <= prAddress.startTime + PROPOSAL_VOTING_TIME,
             "DAO:BL:Safelist selection expired"
@@ -576,6 +577,7 @@ abstract contract DAOSafeList is DAOCategories {
     ) external onlyDelegate nonReentrant {
         uint64 currentTime = uint64(block.timestamp);
         SwitchBlackListNFT storage prNft = _daoBlockNFT[id];
+        require(!prNft.isCompleted, "DAO:BL:Proposal already completed");
         require(
             currentTime <= prNft.startTime + PROPOSAL_VOTING_TIME,
             "DAO:NFT:Selection expired"
@@ -778,7 +780,7 @@ abstract contract DAODelegates is DAOSafeList {
             }
         }else{
             // If application quantity is lower than seven continue with previous delegates
-            for (uint64 i = lastPeriod; i <= currentPeriod; i++) {
+            for (uint64 i = lastPeriod + 1; i <= currentPeriod; i++) {
                 _setNewDelegates(_delegates[lastPeriod], i);
             }
             
@@ -992,13 +994,10 @@ abstract contract DAOProposals is DAODelegates{
         address account,
         uint256 amount
     ) external onlyDelegate nonReentrant {
-
-        require(_proposalVoting[vipId].isCompleted, "DAO:PRP:vipId is unconfirmed!");
+        VotedProposalList memory prVoting = _proposalVoting[vipId];
+        require(prVoting.isCompleted && prVoting.yes > prVoting.no && prVoting.yes > prVoting.abstain, "DAO:PRP:vipId is unconfirmed!");
         require(!isBlackListAddress(account), "DAO:PRP:Account is blacklisted.");
-        require(
-            _funds[vipId].startTime == 0,
-            "DAO:PRP:vipId already exists"
-        );
+
         uint256 freeAmount = getCategoryUnlockAmount(categoryId);
         require(
             freeAmount >= amount,
@@ -1070,7 +1069,7 @@ abstract contract DAOProposals is DAODelegates{
         require(endId > startId, "DAO:Invalid range");
 
         if (startId > fundId) startId = fundId;
-        if (endId > fundId) endId = fundId + 1;
+        if (endId > fundId) endId = fundId;
 
         FundList[] memory results = new FundList[](endId - startId);
         uint256 count = 0;
