@@ -146,7 +146,6 @@ abstract contract DAOMechanisim is Ownable, ReentrancyGuard {
             launchTime > uint64(block.timestamp),
             "DAO:Staking start time must be greater than present time"
         );
-        require(electionPeriod > candTime + candVotingTime, "DAO:Invalid setup");
 
         LAUNCH_TIME = launchTime;
         electionTime = launchTime + electionPeriod;
@@ -580,7 +579,7 @@ abstract contract DAOSafeList is DAOCategories {
         require(!prNft.isCompleted, "DAO:BL:Proposal already completed");
         require(
             currentTime <= prNft.startTime + PROPOSAL_VOTING_TIME,
-            "DAO:NFT:Selection expired"
+            "DAO:BL:Selection expired"
         );
         address delegate = _msgSender();
 
@@ -690,7 +689,7 @@ abstract contract DAODelegates is DAOSafeList {
     function _saveCandidateOfDelegate(address account) private onlyWhiteListAddress(account) onlyWhiteListNFT(account){
         uint64 currentTime = uint64(block.timestamp);
 
-        require(currentTime > electionTime && currentTime < _candidateApplicationEnd(),"DAO:DLG:We are not in candidate application period!");
+        require(currentTime > electionTime && currentTime < _candidateApplicationEnd(),"DAO:DLG:Invalid period!");
         uint64 currentPeriod = getCurrentPeriod();
         uint16 candidateCount = candidateCounter[currentPeriod];
 
@@ -714,7 +713,7 @@ abstract contract DAODelegates is DAOSafeList {
         address account = _msgSender();
         require(!isBlackListAddress(account), "DAO:DLG:Address in blacklist cannot vote.");
         uint64 currentTime = uint64(block.timestamp);
-        require(currentTime > _candidateApplicationEnd() && currentTime < _endVotingElectionTime(),"DAO:DLG: We are not in voting period!");
+        require(currentTime > _candidateApplicationEnd() && currentTime < _endVotingElectionTime(),"DAO:DLG:Invalid period!");
         uint64 currentPeriod = getCurrentPeriod();
         (bool candidate, uint16 key) = isCandidate(currentPeriod, candidateAccount);
         require(candidate,"DAO:DLG:This wallet is not a candidate.");
@@ -803,11 +802,6 @@ abstract contract DAODelegates is DAOSafeList {
         require(_delegates[0].length == 0, "DAO:DLG:Delegates already added.");
         require(firstDelegates.length == DELEGATE_COUNT, "DAO:DLG:Must initialize with 7 delegates.");
 
-        for (uint256 i = 0; i < firstDelegates.length; i++) {
-            for (uint256 j = i + 1; j < firstDelegates.length; j++) {
-                require(firstDelegates[i] != firstDelegates[j], "DAO:DLG:Duplicate delegate address found.");
-            }
-        }
         _setNewDelegates(firstDelegates, 0);
     }
 
@@ -937,6 +931,7 @@ abstract contract DAOProposals is DAODelegates{
         uint256 abstain;
         address[] votes;
         bool isCompleted;
+        bool isFund;
     }
     uint256 public lastVipId;
     uint256 public fundId;
@@ -994,6 +989,14 @@ abstract contract DAOProposals is DAODelegates{
         address account,
         uint256 amount
     ) external onlyDelegate nonReentrant {
+        require(
+            account != address(0),
+            "DAO:Account address can not be zero."
+        );
+        require(
+            !_proposalVoting[vipId].isFund,
+            "DAO:PRP:vipId already exists"
+        );
         VotedProposalList memory prVoting = _proposalVoting[vipId];
         require(prVoting.isCompleted && prVoting.yes > prVoting.no && prVoting.yes > prVoting.abstain, "DAO:PRP:vipId is unconfirmed!");
         require(!isBlackListAddress(account), "DAO:PRP:Account is blacklisted.");
@@ -1044,7 +1047,7 @@ abstract contract DAOProposals is DAODelegates{
 
         if (fund.votes.length >= SUCCESS_COUNT) {
             fund.isCompleted = true; 
-
+            _proposalVoting[fund.vipId].isFund = true;
             _categories[fund.categoryId].used += fund.amount;
             SafeERC20.safeTransfer(IERC20(token), fund.account, fund.amount);
             emit FundSucces(
@@ -1162,16 +1165,8 @@ contract VDAO is DAOProposals {
         address stakeAddress
     ) external onlyOwner {
         require(
-            tokenAddress != address(0),
-            "DAO:Token address can not be zero."
-        );
-        require(
-            nftAddress != address(0),
-            "DAO:NFT address can not be zero."
-        );
-        require(
-            stakeAddress != address(0),
-            "DAO:Stake address can not be zero."
+            tokenAddress != address(0) && nftAddress != address(0) && stakeAddress != address(0),
+            "DAO:Address can not be zero."
         );
         token = tokenAddress;
         nft = nftAddress;
