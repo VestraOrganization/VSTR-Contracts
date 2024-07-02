@@ -296,6 +296,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
     function remainingClaim(address account) external onlyOwner nonReentrant {
         require(_currentDay() >= _totalPeriod(), "STAKE:PRO:Distribution is still continue.");
         require(_totalStaked / STAKE_AMOUNT == 0, "STAKE:PRO:There is still pro wallet account at the contract.");
+        require(account != address(this), "STAKE:PRO:You cannot send token to staking contract.");
         IERC20(token).safeTransfer(account, _poolSize);
         _poolSize = 0; 
         emit RemainingClaim(account, _poolSize);
