@@ -2,19 +2,19 @@ const { network } = require("hardhat");
 const fs = require('fs');
 const path = require('path');
 
-const filePath = path.join(__dirname, './txGasUsed.json'); // JSON dosyasının yolu
+const filePath = path.join(__dirname, './txGasUsed.json'); 
 
 async function saveTransactionGasUsed(fileName, gasUsed) {
     let jsonData;
     try {
         jsonData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     } catch (err) {
-        console.error('Dosya okunurken hata oluştu:', err);
+        console.error('Error occurred while reading the file:', err);
         jsonData = {};
     }
 
     if (!jsonData[network.name]) {
-        jsonData[network.name] = {}; // Eğer yoksa, oluşturun
+        jsonData[network.name] = {}; 
     }
 
     jsonData[network.name][fileName] = gasUsed;

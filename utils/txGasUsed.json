@@ -1,12 +1,12 @@
 {
   "localhost": {
-    "1100_Token_deploy.js": "1605450",
+    "1100_Token_deploy.js": "1654973",
     "1200_NFT_deploy.js": "2186229",
-    "1300_StakeDao_deploy.js": "1923209",
-    "1400_StakeFlexible_deploy.js": "1695399",
-    "1500_StakeLock_deploy.js": "2115591",
-    "1600_DAO_deploy.js": "5171850",
-    "1700_PrivateSale_deploy.js": "2000457",
+    "1300_StakeDao_deploy.js": "1927854",
+    "1400_StakeFlexible_deploy.js": "1771602",
+    "1500_StakeLock_deploy.js": "2010375",
+    "1600_DAO_deploy.js": "5396472",
+    "1700_PrivateSale_deploy.js": "1997877",
     "1800_Airdrop_deploy.js": "1721180",
     "1900_Team_deploy.js": "1254891",
     "1202_NFT_createHolders.js": "16325772",

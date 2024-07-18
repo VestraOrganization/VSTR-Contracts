@@ -4,29 +4,30 @@ const addresses = require("../scripts/0000_addresses.json");
 const holders = require("./holders");
 
 
-const PRIVATESALE_START_TIME = func.timestampLocal(2024, 12, 1, 0, 0, 0);
-const LAUNCH_TIME = func.timestampLocal(2025, 1, 1, 0, 0, 0);
+const PRIVATESALE_START_TIME = func.timestampLocal(2024, 12, 1, 0, 0, 0); // ⚡
+const LAUNCH_TIME = func.timestampLocal(2025, 1, 1, 0, 0, 0); // ⚡
 
 const DAY_TIME = (60 * 60 * 24);
 const MONTH_TIME = (DAY_TIME * 30);
+const networkName = network.name;
 
 const DATA = {
     deploy: {
-        ownerAddress: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-        usdtAddress: addresses.localhost.USDV,
-        tokenAddress: addresses.localhost.VDAOToken,
-        nftAddress: addresses.localhost.CMLENFT,
-        daoAddress: addresses.localhost.VDAO,
-        stakeDaoAddress: addresses.localhost.StakingDAO,
+        ownerAddress: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", // ❗
+        usdtAddress: addresses[networkName].USDT,
+        tokenAddress: addresses[networkName].VDAOToken,
+        nftAddress: addresses[networkName].CMLENFT,
+        daoAddress: addresses[networkName].VDAO,
+        stakeDaoAddress: addresses[networkName].StakingDAO,
 
     }, delegate: [
-        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", // Delegate 1
-        "0x70997970C51812dc3A010C7d01b50e0d17dc79C8", // Delegate 2
-        "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC", // Delegate 3
-        "0x90F79bf6EB2c4f870365E785982E1f101E93b906", // Delegate 4
-        "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65", // Delegate 5
-        "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc", // Delegate 6
-        "0x976EA74026E726554dB657fA54763abd0C3a0aa9", // Delegate 7
+        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", // Delegate 1 ⚡
+        "0x70997970C51812dc3A010C7d01b50e0d17dc79C8", // Delegate 2 ⚡
+        "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC", // Delegate 3 ⚡
+        "0x90F79bf6EB2c4f870365E785982E1f101E93b906", // Delegate 4 ⚡
+        "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65", // Delegate 5 ⚡
+        "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc", // Delegate 6 ⚡
+        "0x976EA74026E726554dB657fA54763abd0C3a0aa9", // Delegate 7 ⚡
 
     ],
     dao: {
@@ -39,9 +40,9 @@ const DATA = {
         pool: func.numToParse("35750000000", 18),
     },
     USDV: {
-        contractName: "USDV",
-        name: "USDV Stable Token",
-        symbol: "USDV",
+        contractName: "USDT",
+        name: "USDT Test Token",
+        symbol: "USDT",
         decimals: "6"
     },
     token: {

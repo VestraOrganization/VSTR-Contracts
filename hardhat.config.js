@@ -18,14 +18,31 @@ module.exports = {
       url: "http://127.0.0.1:8545",
       gas: 30000000
     },
+    hardhat: {
+      chainId: 1337,
+    },
     sepolia: {
       url: process.env.ALCHEMY_SEPOLIA_URL, 
       accounts: [`0x${process.env.ACCOUNT_2_PRIVATEKEY}`], 
-
+    },
+    bscTestnet: {
+      url: "https://data-seed-prebsc-1-s1.binance.org:8545",
+      chainId: 97,
+      gasPrice: 20000000000,
+      accounts: [`0x${process.env.ACCOUNT_2_PRIVATEKEY}`]
+    },
+    mainnet: {
+      url: process.env.ALCHEMY_MAINNET_URL,
+      chainId: 1,
+      accounts: [`0x${process.env.MAINNET_WALLET_PRIVATEKEY}`], 
     },
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY
+    apiKey: {
+      sepolia: process.env.ETHERSCAN_API_KEY,
+      bscTestnet: process.env.BSCSCAN_API_KEY,
+      mainnet: process.env.ETHERSCAN_API_KEY
+    }
   },
   solidity: {
     version: "0.8.20",

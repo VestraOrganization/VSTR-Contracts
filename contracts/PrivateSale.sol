@@ -64,9 +64,11 @@ contract PrivateSale is Ownable, ReentrancyGuard {
     ICMLE public nft;
 
     uint256 public withdrawUsdtAmount;
-    uint256 public withdrawTokenAmount;
+    bool public isWithdrawToken;
     uint256 internal _totalParticipants;
     uint256 internal _totalInvestment;
+    uint256 internal _refundedUserCount;
+    uint256 internal _totalDistribution;
 
     struct AccountInfo{
         uint256 deposit;
@@ -80,6 +82,7 @@ contract PrivateSale is Ownable, ReentrancyGuard {
         uint256 nextUnlockTime;
         uint256 lastClaimTime;
         bool isCompleted;
+        bool isRefunded;
     }
 
     struct VestingData {
@@ -87,9 +90,10 @@ contract PrivateSale is Ownable, ReentrancyGuard {
         uint256 totalClaim;
         uint256 maturityReceived;
         uint256 lastClaimedTime;
+        bool isRefunded;
     }
 
-    mapping(address => bool) internal whitelist;
+    mapping(address => bool) internal _whitelist;
     mapping(address => uint256) internal _deposits;
     mapping(address => VestingData) internal _vestings;
 
@@ -111,30 +115,34 @@ contract PrivateSale is Ownable, ReentrancyGuard {
         address usdtAddress,
         address tokenAddress,
         address nftAddress,
-        uint64 startTime,
-        uint64 endTime,
-        uint64 startVestingTime,
-        uint64 waitingTime,
-        uint64 unlockPeriods
+        uint256 startTime,
+        uint256 endTime,
+        uint256 startVestingTime,
+        uint256 waitingTime,
+        uint256 unlockPeriods
     ) Ownable(initialOwner) {
         require(
             initialOwner != address(0),
-            "SALE:Owner's address cannot be zero"
+            "PSALE:Owner's address cannot be zero"
         );
-        require(usdtAddress != address(0), "SALE:USDT address cannot be zero");
+        require(usdtAddress != address(0), "PSALE:USDT address cannot be zero");
         require(
             tokenAddress != address(0),
-            "SALE:Token address cannot be zero"
+            "PSALE:Token address cannot be zero"
         );
-        require(nftAddress != address(0), "SALE:NFT address cannot be zero");
+        require(nftAddress != address(0), "PSALE:NFT address cannot be zero");
         uint64 currentTime = uint64(block.timestamp);
         require(
             startTime > currentTime,
-            "SALE:Starting Private Sale Time must be in the future"
+            "PSALE:Starting Private Sale Time must be in the future"
         );
         require(
             endTime > startTime,
-            "SALE:End time must be after the starting private sale time"
+            "PSALE:End time must be after the starting private sale time."
+        );
+        require(
+            startVestingTime > endTime,
+            "PSALE:Start Vesting Time must be after the end time."
         );
 
         token = IERC20(tokenAddress);
@@ -150,8 +158,6 @@ contract PrivateSale is Ownable, ReentrancyGuard {
     }
 
 
-
-    // Functions
     /**
      * @notice Allows whitelisted users to deposit USDT and participate in the private sale.
      * @param usdtAmount The amount of USDT to deposit.
@@ -159,17 +165,17 @@ contract PrivateSale is Ownable, ReentrancyGuard {
     function buy(uint256 usdtAmount) external onlyWhiteList nonReentrant {
         require(
             block.timestamp >= START_TIME,
-            "SALE:Private Sale is not started"
+            "PSALE:Private Sale is not started"
         );
-        require(block.timestamp <= END_TIME, "SALE:Private Sale completed");
+        require(block.timestamp <= END_TIME, "PSALE:Private Sale completed");
         address account = _msgSender();
         require(
             usdtAmount >= MIN_PURCHASE || _deposits[account] > 0,
-            "SALE:Purchasing amount must be minimum 500 USDT."
+            "PSALE:Purchasing amount must be minimum 500 USDT."
         );
         require(
             (_deposits[account] + usdtAmount) <= MAX_PURCHASE,
-            "SALE:You have exceeded the maximum purchase amount"
+            "PSALE:You have exceeded the maximum purchase amount"
         );
 
         usdt.safeTransferFrom(account, address(this), usdtAmount);
@@ -197,29 +203,18 @@ contract PrivateSale is Ownable, ReentrancyGuard {
         uint256 currentTime = block.timestamp;
         require(
             currentTime >= START_VESTING_TIME,
-            "SALE:Distributions have not started yet"
+            "PSALE:Distributions have not started yet"
         );
         address account = _msgSender();
-        uint256 userDeposit = _deposits[account];
-        require(
-            userDeposit > 0,
-            "SALE:You did not participate in the private sale"
-        );
-
+        
         VestingData storage user = _vestings[account];
         require(
             user.totalAmount == 0 || user.totalAmount > user.totalClaim,
-            "SALE:All tokens have been claimed"
+            "PSALE:All tokens have been claimed"
         );
 
         if (user.totalAmount == 0) {
-            uint256 refundAmount = _refundedUsdt(userDeposit);
-            if (refundAmount > 0) {
-                usdt.safeTransfer(account, refundAmount);
-                emit Refund(account, address(this), refundAmount);
-            }
-
-            user.totalAmount = _poolAllocation(userDeposit, refundAmount);
+            _sendRefund(account);
         }
 
         (uint256 amount, uint256 maturity) = _calculateClaim(
@@ -228,7 +223,7 @@ contract PrivateSale is Ownable, ReentrancyGuard {
             user.maturityReceived,
             currentTime
         );
-        require(amount > 0, "SALE:No tokens available for claim");
+        require(amount > 0, "PSALE:No tokens available for claim");
 
         user.totalClaim += amount;
         user.maturityReceived = maturity;
@@ -238,8 +233,36 @@ contract PrivateSale is Ownable, ReentrancyGuard {
         emit Claim(account, amount);
     }
 
+
+    function refundClaim() external onlyWhiteList nonReentrant {
+        require(block.timestamp > END_TIME, "PSALE:Refund time is not started.");
+        require(!_vestings[_msgSender()].isRefunded, "PSALE:Refund paid already.");
+        _sendRefund(_msgSender());
+    }
+    
+    function _sendRefund(address account) private {
+        uint256 userDeposit = _deposits[account];
+        require(
+            userDeposit > 0,
+            "PSALE:You did not participate in the private sale"
+        );
+
+        uint256 refundAmount = _refundedUsdt(userDeposit);
+        if (refundAmount > 0) {
+            usdt.safeTransfer(account, refundAmount);
+            emit Refund(account, address(this), refundAmount);
+        }
+        uint256 calcTotalAmount = _poolAllocation(userDeposit, refundAmount);
+
+        _vestings[account].totalAmount = calcTotalAmount;
+        _vestings[account].isRefunded = true;
+
+        _totalDistribution += calcTotalAmount; 
+        _refundedUserCount ++;
+    }
+
     function _poolAllocation(uint256 userDeposit, uint256 refundAmount) internal pure returns(uint256){
-        return ((userDeposit - refundAmount) / TOKEN_PRICE) * TOKEN_DECIMALS;
+        return TOKEN_DECIMALS * ((userDeposit - refundAmount) / TOKEN_PRICE); 
     }
     /**
      * @notice Retrieves information about the specified account.
@@ -263,8 +286,8 @@ contract PrivateSale is Ownable, ReentrancyGuard {
             (uint256 amount, uint256 maturity) = _calculateClaim(totalAmount, user.lastClaimedTime, user.maturityReceived, block.timestamp);
             
             i.deposit = userDeposit; // The deposited amount of USDT.          
-            i.amountRequested = (userDeposit / TOKEN_PRICE * TOKEN_DECIMALS); // The total amount of tokens requested by the account.           
-            i.amountReceivedPool = user.totalAmount > 0 ? user.totalAmount : totalAmount;// The total amount of tokens received from the pool.            
+            i.amountRequested = TOKEN_DECIMALS * (userDeposit / TOKEN_PRICE); // The total amount of tokens requested by the account.           
+            i.amountReceivedPool = totalAmount;// The total amount of tokens received from the pool.            
             i.refund = _refundedUsdt(userDeposit); // The amount of USDT to be refunded.            
             i.totalClaim = user.totalClaim;// The total amount of tokens claimed by the account.
             i.unlockedAmount = amount; // The amount of tokens ready to be claimed.
@@ -273,7 +296,7 @@ contract PrivateSale is Ownable, ReentrancyGuard {
             i.nextUnlockTime = userDeposit > 0 ? _nextUnlockTime(maturity) : 0; // The time of the next token unlock.
             i.lastClaimTime = user.lastClaimedTime; // The time of the last token claim.
             i.isCompleted =  user.totalClaim < i.amountReceivedPool ? false : true; // A boolean indicating whether all tokens have been claimed.
-
+            i.isRefunded = user.isRefunded;
             return i;
 
     }
@@ -315,13 +338,13 @@ contract PrivateSale is Ownable, ReentrancyGuard {
      */
     function withdrawUsdt(uint256 usdtAmount) external onlyOwner nonReentrant {
         require(
-            block.timestamp >= END_TIME,
-            "SALE:withdrawUsdt:Private sale process is still continue."
+            block.timestamp > END_TIME,
+            "PSALE:withdrawUsdt:Private sale process is still continue."
         );
 
         require(
-            withdrawUsdtAmount + usdtAmount <= TOTAL_EXPECTATION,
-            "SALE:withdrawUsdt:Withdraw amount cannot exceed total expectation."
+            withdrawUsdtAmount + usdtAmount <= TOTAL_EXPECTATION - (TOKEN_PRICE * _totalParticipants),
+            "PSALE:withdrawUsdt:Withdraw amount cannot exceed total expectation."
         );
 
         usdt.safeTransfer(owner(), usdtAmount);
@@ -333,34 +356,29 @@ contract PrivateSale is Ownable, ReentrancyGuard {
 
     /**
      * @notice Withdraw Token only by Owner
-     * @param tokenAmount The amount of token to withdraw.
      */
-    function withdrawToken(
-        uint256 tokenAmount
-    ) external onlyOwner nonReentrant {
+    function withdrawToken() external onlyOwner nonReentrant {
         require(
-            block.timestamp >= END_TIME,
-            "SALE:withdrawToken:Private sale process is still continue."
+            block.timestamp > END_TIME,
+            "PSALE:withdrawToken:Private sale process is still continue."
         );
-        require(
-            _totalInvestment < TOTAL_EXPECTATION,
-            "SALE:withdrawToken:Total investment fulfilled total expectation."
-        );
+        require(!isWithdrawToken, "PSALE:You have withdrawn already");
 
-        //Checking the amount of token
-        uint256 maxWithdrawAmount = TOTAL_ALLOCATION - (Math.ceilDiv(_totalInvestment, TOKEN_PRICE) * TOKEN_DECIMALS);
-        require(
-            withdrawTokenAmount + tokenAmount <= maxWithdrawAmount,
-            "SALE:withdrawToken:You have exceed the maximum token withdraw amount."
-        );
+        uint256 rmPoolToken;
+
+        if(_totalInvestment >= TOTAL_EXPECTATION){
+            require (_refundedUserCount == _totalParticipants, "PSALE:There is still user that is not claim.");
+            rmPoolToken = TOTAL_ALLOCATION - _totalDistribution; 
+        }else{
+            rmPoolToken = TOTAL_ALLOCATION - (TOKEN_DECIMALS * (_totalInvestment / TOKEN_PRICE)); 
+        } 
 
         // Token transfer process
-        token.safeTransfer(owner(), tokenAmount);
+        token.safeTransfer(owner(), rmPoolToken);
 
-        //Update the amount of withdrawn tokens
-        withdrawTokenAmount += tokenAmount;
+        isWithdrawToken = true;
 
-        emit WithdrawToken(owner(), tokenAmount);
+        emit WithdrawToken(owner(), rmPoolToken);
     }
 
     /**
@@ -369,7 +387,7 @@ contract PrivateSale is Ownable, ReentrancyGuard {
      */
     function whiteListAdd(address[] memory accounts) external onlyOwner {
         for (uint256 i = 0; i < accounts.length; i++) {
-            whitelist[accounts[i]] = true;
+            _whitelist[accounts[i]] = true;
             emit Whitelisted(accounts[i], true);
         }
     }
@@ -379,7 +397,7 @@ contract PrivateSale is Ownable, ReentrancyGuard {
      * @param account The address to remove from the whitelist.
      */
     function whiteListRemove(address account) external onlyOwner {
-        whitelist[account] = false;
+        _whitelist[account] = false;
         emit Whitelisted(account, false);
     }
 
@@ -390,7 +408,7 @@ contract PrivateSale is Ownable, ReentrancyGuard {
      */
     function whiteListStatus(address account) public view returns (bool) {
         return
-            whitelist[account]
+            _whitelist[account]
                 ? true
                 : nft.balanceOf(account) > 0
                     ? true
@@ -501,9 +519,8 @@ contract PrivateSale is Ownable, ReentrancyGuard {
         uint256 _deposit
     ) internal view returns (uint256) {
         if (_totalInvestment > TOTAL_EXPECTATION) {
-            uint256 poolRate = (_deposit * RATE) / _totalInvestment;
-            uint256 realInvestment = poolRate * TOTAL_EXPECTATION;
-            return (_deposit - (realInvestment / RATE));
+            uint256 poolRate = TOTAL_EXPECTATION * ((_deposit * RATE) / _totalInvestment);
+            return (_deposit - (poolRate / RATE));
         }
         return 0; // Amount of tokens to be received
     }

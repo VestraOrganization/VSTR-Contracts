@@ -19,6 +19,7 @@ node_modules
 beforeContracts
 calVestings.xlsx
 calUnlockPeriod.xlsx
-USDV.sol
+USDT.sol
 XTK.sol
 
+/test

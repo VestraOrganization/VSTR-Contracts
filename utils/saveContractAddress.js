@@ -2,7 +2,7 @@ const { network } = require("hardhat");
 const fs = require('fs');
 const path = require('path');
 
-const filePath = path.join(__dirname, '../scripts/0000_addresses.json'); // JSON dosyasının yolu
+const filePath = path.join(__dirname, '../scripts/0000_addresses.json');
 
 async function saveContractAddress(contractName, address) {
     let jsonData;
@@ -13,9 +13,9 @@ async function saveContractAddress(contractName, address) {
         jsonData = {};
     }
 
-    // network.name özelliğinin olup olmadığını kontrol edin
+
     if (!jsonData[network.name]) {
-        jsonData[network.name] = {}; // Eğer yoksa, oluşturun
+        jsonData[network.name] = {};
     }
 
     jsonData[network.name][contractName] = address;

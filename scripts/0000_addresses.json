@@ -1,14 +1,50 @@
 {
   "localhost": {
-    "USDV": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-    "VDAOToken": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-    "CMLENFT": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+    "USDT": "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82",
+    "VDAOToken": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+    "CMLENFT": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
     "StakingDAO": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
     "StakingFlexible": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
     "StakingLock": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
-    "VDAO": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
-    "PrivateSale": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
-    "VDAOAirdrop": "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82",
-    "Team": "0x9A676e781A523b5d0C0e43731313A708CB607508"
+    "VDAO": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+    "PrivateSale": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+    "VDAOAirdrop": "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318",
+    "Team": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788"
+  },
+  "sepolia": {
+    "USDT": "0x5a740F9981aD101f705B244892c69B2FFCB4Fe25",
+    "VDAOToken": "0x03E5A933eE22FBf6894CbE1073dDdb664b3090b0",
+    "CMLENFT": "0x7041afA377fb3294ab396a971F437E5a6b7Cb362",
+    "VDAO": "0x66090217FCc4E1fc6Be69527F0999F37010529B2",
+    "StakingDAO": "0x454A75b5F1ED48F53e60F2387055795B64DC428A",
+    "StakingFlexible": "0xd0964E3963F1E98C351524185C096a5Fb9B960a0",
+    "StakingLock": "0x1D3F42FF0481C694d085508F45f906e7A8a39bE6",
+    "VDAOAirdrop": "0xFA456b061559a9b95971F8fcf465be8A82Ed0347",
+    "PrivateSale": "0xD01d236c66e000e44C76388c626687bb86B30c1d",
+    "Team": "0x43E220AC90FFA228BAB0d420341Bd72D7A20E2F1"
+  },
+  "bscTestnet": {
+    "USDT": "0xc71Dc15d6A50Bc104391707bdCFaD4f0CEa1aAb8",
+    "VDAOToken": "",
+    "CMLENFT": "",
+    "StakingDAO": "",
+    "StakingFlexible": "",
+    "StakingLock": "",
+    "VDAO": "",
+    "PrivateSale": "",
+    "VDAOAirdrop": "",
+    "Team": ""
+  },
+  "mainnet": {
+    "USDT": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "VDAOToken": "",
+    "CMLENFT": "",
+    "StakingDAO": "",
+    "StakingFlexible": "",
+    "StakingLock": "",
+    "VDAO": "",
+    "PrivateSale": "",
+    "VDAOAirdrop": "",
+    "Team": ""
   }
 }
