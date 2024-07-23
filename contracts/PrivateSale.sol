@@ -262,7 +262,7 @@ contract PrivateSale is Ownable, ReentrancyGuard {
     }
 
     function _poolAllocation(uint256 userDeposit, uint256 refundAmount) internal pure returns(uint256){
-        return TOKEN_DECIMALS * ((userDeposit - refundAmount) / TOKEN_PRICE); 
+        return ((userDeposit - refundAmount) * TOKEN_DECIMALS) / TOKEN_PRICE; 
     }
     /**
      * @notice Retrieves information about the specified account.
@@ -521,8 +521,10 @@ contract PrivateSale is Ownable, ReentrancyGuard {
         if (_totalInvestment > TOTAL_EXPECTATION) {
             uint256 poolRate = TOTAL_EXPECTATION * ((_deposit * RATE) / _totalInvestment);
             return (_deposit - (poolRate / RATE));
+        }else{
+            (, uint256 _refund) = Math.tryMod(_deposit, TOKEN_PRICE);
+            return _refund; 
         }
-        return 0; // Amount of tokens to be received
     }
 
 
