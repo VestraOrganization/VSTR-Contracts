@@ -57,7 +57,7 @@ const DATA = {
         name: "Crypto Monster Limited Edition",
         symbol: "CMLE",
         totalSupply: "502",
-        baseURI: "https://cmlenft.fun/nft/"
+        baseURI: "https://nft.cmleteam.com/metadata/"
     },
     airdrop: {
         contractName: "VDAOAirdrop",
@@ -243,7 +243,8 @@ const DATA = {
         contractName: "Team",
         waitingTime: MONTH_TIME * 12,
         unlockPeriods: MONTH_TIME,
-        pool: func.numToParse("7500000000", 18)
+        pool: func.numToParse("7500000000", 18),
+        launchTime: LAUNCH_TIME
     },
     nftIds: holders.nftId,
     nftVote: holders.nftVote,

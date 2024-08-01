@@ -6,7 +6,7 @@ const { DATA } = require("../utils/opt")
 const opt = {
   owner: DATA.deploy.ownerAddress,
   contractName: DATA.team.contractName,
-  launchTime: DATA.dao.launchTime,
+  launchTime: DATA.team.launchTime,
 
   tokenAddress: DATA.deploy.tokenAddress,
   nftAddress: DATA.deploy.nftAddress,
@@ -25,7 +25,7 @@ async function main() {
     await run("verify:verify", {
       address: adresses[network.name][opt.contractName],
       constructorArguments: [
-        opt.tokenAddress, opt.nftAddress, opt.waitingTime, opt.unlockPeriods
+        opt.tokenAddress, opt.nftAddress, opt.waitingTime, opt.unlockPeriods, opt.launchTime
       ],
     });
     console.log("Contract is verified.");

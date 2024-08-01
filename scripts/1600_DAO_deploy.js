@@ -14,14 +14,18 @@ const opt = {
   votingTime: DATA.dao.votingTime,
   proposalVotingTime: DATA.dao.proposalVotingTime,
   owner: DATA.deploy.ownerAddress,
+
+  tokenAddress: DATA.deploy.tokenAddress,
+  nftAddress: DATA.deploy.nftAddress,
+  stakeAddress: DATA.deploy.stakeDaoAddress,
 }
 
 async function main() {
   const CONTRACT = await ethers.getContractFactory(opt.contractName);
-  const contract = await CONTRACT.deploy(opt.owner, opt.launchTime, opt.electionPeriod, opt.candTime, opt.votingTime, opt.proposalVotingTime);
+  const contract = await CONTRACT.deploy(opt.owner, opt.launchTime, opt.electionPeriod, opt.candTime, opt.votingTime, opt.proposalVotingTime, opt.tokenAddress, opt.nftAddress, opt.stakeAddress);
 
   console.log("Deploy Verify Options: ### ", contract.target,
-  opt.owner, opt.launchTime, opt.electionPeriod, opt.candTime, opt.votingTime, opt.proposalVotingTime, " ###"
+  opt.owner, opt.launchTime, opt.electionPeriod, opt.candTime, opt.votingTime, opt.proposalVotingTime, opt.tokenAddress, opt.nftAddress, opt.stakeAddress, " ###"
   );
 
 

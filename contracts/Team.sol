@@ -20,6 +20,7 @@ interface IDAO {
 contract Team {
     event SetMember(address indexed account, uint256 amount, uint64 startTime);
     event ClaimMember(address indexed account, uint256 amount);
+    event StatusMember(address indexed account, bool status);
 
     using Math for uint256;
     using SafeERC20 for IERC20;
@@ -52,6 +53,7 @@ contract Team {
     }
     mapping(address => Member) internal _members;
 
+    uint64 immutable LAUNCH_TIME;
     uint64 immutable WAITING_TIME; 
     uint64 immutable UNLOCK_PERIOD; 
     uint64 constant START_PERCENT = 10; // Percentage of tokens unlocked at the start.
@@ -72,8 +74,14 @@ contract Team {
         address tokenAddress,
         address nftAddress,
         uint64 waitingTime,
-        uint64 unlockPeriod
+        uint64 unlockPeriod,
+        uint64 launchTime
     ) {
+        require(
+            launchTime > uint64(block.timestamp),
+            "launchTime must be greater than current time"
+        );
+        LAUNCH_TIME = launchTime;
         WAITING_TIME = waitingTime;
         UNLOCK_PERIOD = unlockPeriod;
 
@@ -92,6 +100,8 @@ contract Team {
         uint64 startTime,
         uint256 amount
     ) external onlyBoss {
+        require(startTime >= LAUNCH_TIME,"Start time must be equals or greater than launch time");
+        require(startTime > uint64(block.timestamp),"Start time must be greater than current time");
         Member storage user = _members[account];
 
         if (user.amount > 0) {
@@ -124,6 +134,8 @@ contract Team {
             "TEAM:Already the same status!"
         );
         _members[account].isActive = status;
+
+        emit StatusMember(account, status);
     }
 
     /**
@@ -138,7 +150,7 @@ contract Team {
             "TEAM:All tokens have been claimed"
         );
 
-        uint256 _amount = calculateClaim(
+        uint256 _amount = _calculateClaim(
             user.startTime,
             user.amount,
             user.claimAmount
@@ -162,7 +174,7 @@ contract Team {
      * @param claimAmount Amount already claimed.
      * @return uint256 The claimable amount.
      */
-    function calculateClaim(
+    function _calculateClaim(
         uint64 startTime,
         uint256 amount,
         uint256 claimAmount
@@ -250,8 +262,8 @@ contract Team {
         claimAmount = user.claimAmount;
         lastClaimTime = user.lastClaimTime;
         isActive = user.isActive;
-        unlockAmount = calculateClaim(startTime, amount, claimAmount);
-        remaniningAmount = user.amount - (user.claimAmount + unlockAmount); 
+        unlockAmount = _calculateClaim(startTime, amount, claimAmount);
+        remaniningAmount = user.amount - (user.claimAmount + unlockAmount);
         (uint64 _nextTime, uint256 _nextAmount) = _nextUnlock(
             startTime,
             amount

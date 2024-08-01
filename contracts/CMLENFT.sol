@@ -33,6 +33,11 @@ contract CMLENFT is
     ERC721Burnable,
     ReentrancyGuard
 {
+
+    event MintNFT(uint256 tokenId);
+    event SetAddress(address daoAdress);
+    event SetUri();
+
     ///@notice Address of the DAO contract.
     address public dao; 
     ///@dev Mapping of user addresses to their NFTs.
@@ -157,7 +162,9 @@ contract CMLENFT is
      * @param baseURI The base URI.
      */
     function setBaseURI(string memory baseURI) external onlyOwner {
+        require(bytes(baseURI).length > 0, "NFT:Base URI cannot be empty");
         _baseTokenURI = baseURI;
+        emit SetUri();
     }
 
     /**
@@ -224,7 +231,12 @@ contract CMLENFT is
     function setAddresses(
         address daoAddress
     ) external onlyOwner {
+        require(
+            daoAddress != address(0),
+            "CMLE:DAO address can not be zero."
+        );
         dao = daoAddress;
+        emit SetAddress(daoAddress); 
     }
 
     /**
@@ -248,6 +260,7 @@ contract CMLENFT is
             "CMLE:Token ID out of the range"
         );
         _mint(to, tokenId);
+        emit MintNFT(tokenId);
     }
 
     /**

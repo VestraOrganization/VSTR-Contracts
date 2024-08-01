@@ -23,18 +23,11 @@ contract VDAOAirdrop is ReentrancyGuard {
     /// @notice Event emitted when a user claims tokens.
     event Claim(address indexed account, uint256 amount);
 
-    /// @notice Event emitted when a user claims tokens through a partner.
-    event ClaimPartners(
-        address indexed account,
-        address indexed partner,
-        uint256 amount
-    );
-
     using SafeERC20 for IERC20;
     using Math for uint256;
 
-    IERC20 public token; // The token being distributed.
-    ICMLE public nft; // The contract managing the collection of NFTs.
+    IERC20 public immutable token; // The token being distributed.
+    ICMLE public immutable nft; // The contract managing the collection of NFTs.
 
     // ===================== Airdrop & Vesting  ===================== \\
     uint256 internal constant TOKEN_DECIMAL = 1e18; // Decimal places for token amount.
@@ -58,7 +51,6 @@ contract VDAOAirdrop is ReentrancyGuard {
         uint256 nextUnlockTime; // Timestamp of next unlock for the user.
         uint256 lastClaimTime; // Timestamp of last claim by the user.
         bool isCompleted; // Flag indicating if airdrop is completed for the user.
-        uint256 maturity; // Timestamp of vesting maturity for the user.
     }
 
     // Struct to hold airdrop information.
@@ -137,7 +129,7 @@ contract VDAOAirdrop is ReentrancyGuard {
             for (uint i = 0; i < nftIds.length; i++) {
                 uint256 nftId = nftIds[i];
                 if (nftId == 1000 || nftId == 2000) continue; // Exclude BOSS tokens from airdrop
-                if(nft.ownerOf(nftId) != account) continue;
+                if (nft.ownerOf(nftId) != account) continue;
                 if (isClaimedNFT[nftId]) continue; // Skip NFTs already claimed
                 if (!isClaimedNFT[nftId]) {
                     countNft++;
@@ -309,7 +301,7 @@ contract VDAOAirdrop is ReentrancyGuard {
         for (uint i = 0; i < nftIds.length; i++) {
             uint256 nftId = nftIds[i];
             if (nftId == 1000 || nftId == 2000) continue; // Exclude BOSS tokens from airdrop
-            if(nft.ownerOf(nftId) != account) continue;
+            if (nft.ownerOf(nftId) != account) continue;
             if (isClaimedNFT[nftId]) continue; // Skip NFTs already claimed
             if (!isClaimedNFT[nftId]) {
                 countNft++;
@@ -319,128 +311,5 @@ contract VDAOAirdrop is ReentrancyGuard {
     }
 
     // ===================== CMLENFT Airdrop ===================== \\
-    //-----------------------------------------------------------------
-    // ===================== Partners Airdrops ===================== \\
 
-    uint256 internal constant PARTNER_AD_BOSS_CMHEAD_PERCENTAGE = 15; // Percentage of airdrop for CMHEAD BOSS
-    uint256 internal constant PARTNER_AD_BOSS_CMPOWER_PERCENTAGE = 15; // Percentage of airdrop for CMPOWER BOSS
-    uint256 internal constant PARTNER_AD_USER_PERCENTAGE = 70; // Percentage of airdrop for HOLDERS
-
-    // ===================== # Partners Airdrops ===================== \\
-    ///@notice Amount claimed by users from each partner
-    mapping(address => mapping(address => uint256)) public partnersUserClaimAmount; 
-    ///@notice Checks that NFT ID is claimed or not.
-    mapping(uint256 => mapping(address => bool)) public nftIdPartnerClaimed;
-    ///@notice Partner airdrop balances
-    mapping(address => uint256) public partnerAirdropBalance; 
-
-    /// @notice Allows the caller to claim their allocated tokens from a specific partner's airdrop.
-    /// @param partnerAddress The address of the partner's airdrop contract.
-    function partnerAirdropClaim(address partnerAddress) external nonReentrant {
-        address account = msg.sender;
-        uint256[] memory nftIds = holder(account);
-
-        require(nftIds.length > 0, "AIRDROP:PARTNERS:You have not got NFT");
-        require(
-            partnersUserClaimAmount[partnerAddress][account] == 0,
-            "AIRDROP:PARTNERS:All rights received"
-        );
-
-        uint256 partnerBalance;
-        if (partnerAirdropBalance[partnerAddress] == 0) {
-            partnerBalance = _partnerBalance(partnerAddress);
-            partnerAirdropBalance[partnerAddress] = partnerBalance;
-        } else {
-            partnerBalance = partnerAirdropBalance[partnerAddress];
-        }
-
-        require(partnerBalance > 0, "AIRDROP:PARTNERS:No balance for partners");
-
-        uint256 totalAmount = _partnerAirdropCalculate(
-            nftIds,
-            partnerAddress,
-            partnerBalance
-        );
-        require(totalAmount > 0, "AIRDROP:PARTNERS:Partner has no tokens");
-
-        partnersUserClaimAmount[partnerAddress][account] = totalAmount;
-
-        for (uint i = 0; i < nftIds.length; i++) {
-            nftIdPartnerClaimed[nftIds[i]][partnerAddress] = true;
-        }
-
-        emit ClaimPartners(account, partnerAddress, totalAmount);
-
-        SafeERC20.safeTransfer(IERC20(partnerAddress), account, totalAmount);
-    }
-
-    /// @notice Retrieves the total amount of tokens a user can claim from a specific partner's airdrop.
-    /// @param partnerAddress The address of the partner's airdrop contract.
-    /// @param account The address of the user.
-    /// @return The total amount of tokens the user can claim from the partner's airdrop.
-    function partnerAirdropInfo(
-        address partnerAddress,
-        address account
-    ) external view returns (uint256) {
-        uint256[] memory nftIds = holder(account);
-        if (nftIds.length == 0) {
-            return 0;
-        }
-        uint256 partnerBalance = _partnerBalance(partnerAddress);
-
-        if (partnerBalance > 0) {
-            return
-                _partnerAirdropCalculate(
-                    nftIds,
-                    partnerAddress,
-                    partnerBalance
-                );
-        }
-        return 0;
-    }
-
-    /// @notice Retrieves the balance of tokens allocated for a specific partner's airdrop.
-    /// @param partnerAddress The address of the partner's airdrop contract.
-    /// @return The balance of tokens allocated for the partner's airdrop.
-    function _partnerBalance(
-        address partnerAddress
-    ) internal view returns (uint256) {
-        if (partnerAirdropBalance[partnerAddress] > 0) {
-            return partnerAirdropBalance[partnerAddress];
-        } else {
-            return IERC20(partnerAddress).balanceOf(address(this));
-        }
-    }
-
-    /// @notice Calculates the total amount of tokens a user can claim from a specific partner's airdrop.
-    /// @param nftIds The array of NFT IDs owned by the user.
-    /// @param partnerAddress The address of the partner's airdrop contract.
-    /// @param amount The total amount of tokens allocated for the partner's airdrop.
-    /// @return The total amount of tokens the user can claim from the partner's airdrop.
-    function _partnerAirdropCalculate(
-        uint256[] memory nftIds,
-        address partnerAddress,
-        uint256 amount
-    ) internal view returns (uint256) {
-        uint256 totalAmount;
-        for (uint256 i = 0; i < nftIds.length; i++) {
-            uint256 nftId = nftIds[i];
-            if (!nftIdPartnerClaimed[nftId][partnerAddress]) {
-                if (nftId == 1000 || nftId == 2000) {
-                    totalAmount += Math.mulDiv(
-                        amount,
-                        PARTNER_AD_BOSS_CMPOWER_PERCENTAGE,
-                        100
-                    );
-                } else {
-                    totalAmount += (Math.mulDiv(
-                        amount,
-                        PARTNER_AD_USER_PERCENTAGE,
-                        100
-                    ) / 500);
-                }
-            }
-        }
-        return totalAmount;
-    }
 }

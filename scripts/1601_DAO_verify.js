@@ -12,6 +12,10 @@ const opt = {
   votingTime: DATA.dao.votingTime,
   proposalVotingTime: DATA.dao.proposalVotingTime,
   owner: DATA.deploy.ownerAddress,
+  
+  tokenAddress: DATA.deploy.tokenAddress,
+  nftAddress: DATA.deploy.nftAddress,
+  stakeAddress: DATA.deploy.stakeDaoAddress,
 }
 
 async function main() {
@@ -25,7 +29,7 @@ async function main() {
     await run("verify:verify", {
       address: adresses[network.name][opt.contractName],
       constructorArguments: [
-        opt.owner, opt.launchTime, opt.electionPeriod, opt.candTime, opt.votingTime, opt.proposalVotingTime
+        opt.owner, opt.launchTime, opt.electionPeriod, opt.candTime, opt.votingTime, opt.proposalVotingTime, opt.tokenAddress, opt.nftAddress, opt.stakeAddress
       ],
     });
     console.log("Contract is verified.");

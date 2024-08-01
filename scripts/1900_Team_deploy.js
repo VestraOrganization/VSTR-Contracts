@@ -8,7 +8,7 @@ const { DATA } = require("../utils/opt")
 const opt = {
   owner: DATA.deploy.ownerAddress,
   contractName: DATA.team.contractName,
-  launchTime: DATA.dao.launchTime,
+  launchTime: DATA.team.launchTime,
   tokenAddress: DATA.deploy.tokenAddress,
   nftAddress: DATA.deploy.nftAddress,
   waitingTime: DATA.team.waitingTime,
@@ -18,11 +18,11 @@ const opt = {
 async function main() {
 
   const CONTRACT = await ethers.getContractFactory(opt.contractName);
-  const contract = await CONTRACT.deploy(opt.tokenAddress, opt.nftAddress, opt.waitingTime, opt.unlockPeriods);
+  const contract = await CONTRACT.deploy(opt.tokenAddress, opt.nftAddress, opt.waitingTime, opt.unlockPeriods, opt.launchTime);
 
   
   console.log("Deploy Verify Options: ### ", contract.target,
-  opt.tokenAddress, opt.nftAddress, opt.waitingTime, opt.unlockPeriods, " ###"
+  opt.tokenAddress, opt.nftAddress, opt.waitingTime, opt.unlockPeriods, opt.launchTime, " ###"
   );
 
 

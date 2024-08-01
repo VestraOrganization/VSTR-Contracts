@@ -59,7 +59,7 @@ contract StakingLock is Ownable, ReentrancyGuard {
     struct MaturityData {
         // Constants
         string name;
-        uint256 apr;
+        uint256 yieldRate;
         uint64 unlockTime; 
         uint256 poolReward; 
         uint256 totalCap; 
@@ -134,7 +134,7 @@ contract StakingLock is Ownable, ReentrancyGuard {
     function createMaturityStake(
         uint8 maturity,
         string memory name,
-        uint256 apr,
+        uint256 yieldRate,
         uint64 unlockTime,
         uint256 poolReward,
         uint256 maxAccountStake,
@@ -148,7 +148,7 @@ contract StakingLock is Ownable, ReentrancyGuard {
         MaturityData storage mat = maturities[maturity];
 
         mat.name = name;
-        mat.apr = apr;
+        mat.yieldRate = yieldRate;
         mat.unlockTime = unlockTime;
         mat.poolReward = poolReward;
         mat.maxAccountStake = maxAccountStake;
@@ -246,7 +246,7 @@ contract StakingLock is Ownable, ReentrancyGuard {
             Stake memory user = stakes[account][maturityItems[i]];
 
             MaturityData memory data = maturities[maturityItems[i]];
-            uint256 yield = _aprCalculate(user.stakeAmount, data.apr);
+            uint256 yield = _yieldCalculate(user.stakeAmount, data.yieldRate);
             userStakes[counter] = AccountInfo({
                 name: data.name,
                 maturity: maturityItems[i],
@@ -316,7 +316,7 @@ contract StakingLock is Ownable, ReentrancyGuard {
         );
 
         MaturityData storage data = maturities[maturity];
-        uint256 yield = _aprCalculate(amount, data.apr);
+        uint256 yield = _yieldCalculate(amount, data.yieldRate);
 
         require(
             yield <= poolSize,
@@ -349,12 +349,12 @@ contract StakingLock is Ownable, ReentrancyGuard {
         emit Staked(account, amount, maturity);
     }
     /**
-     * @dev Function to calculate APR
+     * @dev Function to calculate yield
      */
-    function _aprCalculate(
+    function _yieldCalculate(
         uint256 amount,
-        uint256 apr
+        uint256 yieldRate
     ) internal pure returns (uint256) {
-        return (amount * apr / 100);
+        return (amount * yieldRate / 100);
     }
 }

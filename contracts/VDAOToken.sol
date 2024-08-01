@@ -59,14 +59,14 @@ contract VDAOToken is
     ) public override returns (bool) {
         require(
             recipient != address(0),
-            "VToken:Cannot transfer to the zero address."
+            "VSTR:Cannot transfer to the zero address."
         );
         require(
             amount > 0,
-            "VToken:Transfer amount must be greater than zero."
+            "VSTR:Transfer amount must be greater than zero."
         );
-        require(!isBlackList(_msgSender()), "VToken:Sender is blacklisted");
-        require(!isBlackList(recipient), "VToken:Recipient is blacklisted");
+        require(!isBlackList(_msgSender()), "VSTR:Sender is blacklisted");
+        require(!isBlackList(recipient), "VSTR:Recipient is blacklisted");
         return super.transfer(recipient, amount);
     }
 
@@ -79,13 +79,13 @@ contract VDAOToken is
     ) public override returns (bool) {
         require(
             spender != address(0),
-            "VToken:Cannot approve to the zero address."
+            "VSTR:Cannot approve to the zero address."
         );
         require(
             amount > 0,
-            "VToken:Approval amount must be greater than zero."
+            "VSTR:Approval amount must be greater than zero."
         );
-        require(!isBlackList(_msgSender()), "VToken:Account is blacklisted");
+        require(!isBlackList(_msgSender()), "VSTR:Account is blacklisted");
         return super.approve(spender, amount);
     }
 
@@ -99,18 +99,18 @@ contract VDAOToken is
     ) public override returns (bool) {
         require(
             sender != address(0),
-            "VToken:Cannot transfer from the zero address."
+            "VSTR:Cannot transfer from the zero address."
         );
         require(
             recipient != address(0),
-            "VToken:Cannot transfer to the zero address."
+            "VSTR:Cannot transfer to the zero address."
         );
         require(
             amount > 0,
-            "VToken:Transfer amount must be greater than zero."
+            "VSTR:Transfer amount must be greater than zero."
         );
-        require(!isBlackList(sender), "VToken:sender is blacklisted");
-        require(!isBlackList(recipient), "VToken:Recipient is blacklisted");
+        require(!isBlackList(sender), "VSTR:sender is blacklisted");
+        require(!isBlackList(recipient), "VSTR:Recipient is blacklisted");
         
         return super.transferFrom(sender, recipient, amount);
     }
@@ -119,12 +119,12 @@ contract VDAOToken is
      * @dev Overrides burn function to add blacklist check.
      */
     function burn(uint256 value) public override {
-        require(value > 0, "VToken:Amount to burn should be greater than 0");
+        require(value > 0, "VSTR:Amount to burn should be greater than 0");
         require(
             value <= balanceOf(_msgSender()),
-            "VToken:Not enough tokens to burn"
+            "VSTR:Not enough tokens to burn"
         );
-        require(!isBlackList(_msgSender()), "VToken:Account is blacklisted");
+        require(!isBlackList(_msgSender()), "VSTR:Account is blacklisted");
         super.burn(value);
     }
 
@@ -134,14 +134,14 @@ contract VDAOToken is
     function burnFrom(address account, uint256 value) public override {
         require(
             account != address(0),
-            "VToken:Cannot transfer from the zero address."
+            "VSTR:Cannot transfer from the zero address."
         );
-        require(value > 0, "VToken:Amount to burn should be greater than 0");
+        require(value > 0, "VSTR:Amount to burn should be greater than 0");
         require(
             value <= allowance(account, _msgSender()),
-            "VToken:Not enough tokens to burn"
+            "VSTR:Not enough tokens to burn"
         );
-        require(!isBlackList(account), "VToken:Account is blacklisted");
+        require(!isBlackList(account), "VSTR:Account is blacklisted");
         super.burnFrom(account, value);
     }
 
@@ -152,7 +152,7 @@ contract VDAOToken is
     function setDaoAddress(address daoAddress) external onlyOwner {
         require(
             daoAddress != address(0),
-            "VToken:DAO address can not be zero."
+            "VSTR:DAO address can not be zero."
         );
         dao = daoAddress;
         emit SetAddress(daoAddress); 

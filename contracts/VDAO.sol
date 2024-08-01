@@ -114,6 +114,7 @@ abstract contract DAOMechanisim is Ownable, ReentrancyGuard {
      */
     modifier onlyWhiteListNFT(address account){
         uint256[] memory nfts = INFT(nft).holderNFTs(account);
+        require(nfts.length > 0, "DAO:NFT not found");
         for (uint i = 0; i < nfts.length; i++) {
             if (isBlackListNFT(nfts[i])) {
                 emit BlacklistedNFT(account, nfts[i]);
@@ -139,12 +140,19 @@ abstract contract DAOMechanisim is Ownable, ReentrancyGuard {
         uint64 electionPeriod,
         uint64 candTime,
         uint64 candVotingTime,
-        uint64 proposalVotingTime
+        uint64 proposalVotingTime,
+        address tokenAddress,
+        address nftAddress,
+        address stakeAddress
 
     ) Ownable(initialOwner) {
         require(
             launchTime > uint64(block.timestamp),
             "DAO:Staking start time must be greater than present time"
+        );
+        require(
+            tokenAddress != address(0) && nftAddress != address(0) && stakeAddress != address(0),
+            "DAO:Address can not be zero."
         );
 
         LAUNCH_TIME = launchTime;
@@ -154,6 +162,10 @@ abstract contract DAOMechanisim is Ownable, ReentrancyGuard {
         CANDIDATE_APPLY_TIME = candTime;
         CANDIDATE_VOTING_TIME = candVotingTime;
         PROPOSAL_VOTING_TIME = proposalVotingTime;
+        
+        token = tokenAddress;
+        nft = nftAddress;
+        stake = stakeAddress;
     }
 
     /**
@@ -162,6 +174,7 @@ abstract contract DAOMechanisim is Ownable, ReentrancyGuard {
      * @return uint256 Voting power of the account.
      */
     function votingPower(address account) public view returns (uint256) {
+        if(isBlackListAddress(account)) return 0;
         uint256[] memory _nfts = INFT(nft).holderNFTs(account);
         uint256 power;
         for (uint256 i = 0; i < _nfts.length; i++) {
@@ -272,8 +285,14 @@ abstract contract DAOMechanisim is Ownable, ReentrancyGuard {
      * @param nftId ID of the NFT.
      * @return uint256 Voting power of the NFT.
      */
-    function _nftVotingPower(uint256 nftId) internal pure returns (uint256) {
-        return nftId == 1000 || nftId == 2000 ? VP_BOSS : VP_USER;
+    function _nftVotingPower(uint256 nftId) internal view returns (uint256) {
+        if(isBlackListNFT(nftId)){
+            return 0;
+        }
+        if(nftId == 1000 || nftId == 2000){
+            return VP_BOSS;
+        }
+        return VP_USER;
     }
 
     /**
@@ -548,6 +567,7 @@ abstract contract DAOSafeList is DAOCategories {
      * @param listed Whether to add or remove the address (true to add, false to remove).
      */
     function switchBlackListNFT(uint256 nftId, uint8 catId, bool listed) external onlyDelegate {
+        require((nftId >= 1000 && nftId <= 1250) || (nftId >= 2000 && nftId <= 2250), "DAO:BL:Undefined NFT id");
         require(
             _blackListNFT[nftId] != listed, 
             "DAO:BL:Already listed!"
@@ -632,7 +652,7 @@ abstract contract DAOSafeList is DAOCategories {
 abstract contract DAODelegates is DAOSafeList {
 
     event CandidateApply(address account);
-    event VoteCandidate(address account, address delegate);
+    event VoteCandidate(address account, address delegate, uint256 wotingPower);
     event ElectionEnded();     
 
     struct Candidates{
@@ -724,7 +744,7 @@ abstract contract DAODelegates is DAOSafeList {
         for (uint i = 0; i < _nfts.length; i++) {
             uint256 nftId = _nfts[i];
             // If user is not voted and is not minted his NFT's
-            if(!isVotedNFT[currentPeriod][nftId] && !isBlackListNFT(nftId)){
+            if(!isVotedNFT[currentPeriod][nftId]){
                 _votingPower += _nftVotingPower(nftId);
                 isVotedNFT[currentPeriod][nftId] = true;
             }
@@ -739,7 +759,7 @@ abstract contract DAODelegates is DAOSafeList {
         require(_votingPower > 0,"DAO:DLG:There is no available voting power.");
         usedVotingPower[currentPeriod][account] += _votingPower;
         candidatesOfElection[currentPeriod][key].voting += _votingPower;
-        emit VoteCandidate(account, candidateAccount);
+        emit VoteCandidate(account, candidateAccount, _votingPower);
     }
 
     /**
@@ -902,7 +922,9 @@ abstract contract DAOProposals is DAODelegates{
         uint256 amount
     );
 
-    event Voted(uint256 vipId, address delegate);
+    event SetProposalResult(uint256 vipId, bool isFund);
+    event VoteProposalResult(uint256 vipId, bool isCompleted);
+
     event FundSucces(
         uint256 vipId,
         uint8 categoryId,
@@ -932,7 +954,9 @@ abstract contract DAOProposals is DAODelegates{
         address[] votes;
         bool isCompleted;
         bool isFund;
+        bool isTransfer;
     }
+
     uint256 public lastVipId;
     uint256 public fundId;
 
@@ -940,7 +964,7 @@ abstract contract DAOProposals is DAODelegates{
     mapping(uint256 => FundList) internal _funds;
 
 
-    function setProposalResults(uint256 vipId, uint256 yesVotingPower, uint256 noVotingPower, uint256 abstainVotingPower) external onlyDelegate nonReentrant {
+    function setProposalResults(uint256 vipId, uint256 yesVotingPower, uint256 noVotingPower, uint256 abstainVotingPower, bool isFund) external onlyDelegate nonReentrant {
         
         VotedProposalList storage vote = _proposalVoting[vipId]; 
 
@@ -952,10 +976,12 @@ abstract contract DAOProposals is DAODelegates{
         vote.no = noVotingPower;
         vote.abstain = abstainVotingPower;
         vote.votes.push(_msgSender()); 
+        vote.isFund = isFund;
 
         if(lastVipId < vipId){
             lastVipId = vipId;
         }
+        emit SetProposalResult(vipId, isFund);
     }
 
     function voteProposalResults(uint256 vipId) external onlyDelegate nonReentrant {
@@ -972,7 +998,8 @@ abstract contract DAOProposals is DAODelegates{
 
         vote.votes.push(delegate);
         if (_proposalVoting[vipId].votes.length == SUCCESS_COUNT) {
-            vote.isCompleted = true; 
+            vote.isCompleted = true;
+            emit VoteProposalResult(vipId, true);
         }
     }
 
@@ -993,12 +1020,12 @@ abstract contract DAOProposals is DAODelegates{
             account != address(0),
             "DAO:Account address can not be zero."
         );
-        require(
-            !_proposalVoting[vipId].isFund,
-            "DAO:PRP:vipId already exists"
-        );
         VotedProposalList memory prVoting = _proposalVoting[vipId];
-        require(prVoting.isCompleted && prVoting.yes > prVoting.no && prVoting.yes > prVoting.abstain, "DAO:PRP:vipId is unconfirmed!");
+        require(
+            prVoting.isFund && !prVoting.isTransfer,
+            "DAO:PRP:vipId closed"
+        );
+        require(prVoting.isCompleted && prVoting.yes > prVoting.no && prVoting.yes > prVoting.abstain, "DAO:PRP:vipId result 'NOT YES'");
         require(!isBlackListAddress(account), "DAO:PRP:Account is blacklisted.");
 
         uint256 freeAmount = getCategoryUnlockAmount(categoryId);
@@ -1047,7 +1074,7 @@ abstract contract DAOProposals is DAODelegates{
 
         if (fund.votes.length >= SUCCESS_COUNT) {
             fund.isCompleted = true; 
-            _proposalVoting[fund.vipId].isFund = true;
+            _proposalVoting[fund.vipId].isTransfer = true;
             _categories[fund.categoryId].used += fund.amount;
             SafeERC20.safeTransfer(IERC20(token), fund.account, fund.amount);
             emit FundSucces(
@@ -1141,7 +1168,11 @@ contract VDAO is DAOProposals {
         uint64 electionPeriod,
         uint64 candTime,
         uint64 candVotingTime,
-        uint64 proposalVotingTime
+        uint64 proposalVotingTime,
+
+        address tokenAddress,
+        address nftAddress,
+        address stakeAddress
     )
         DAOMechanisim(
             initialOwner,
@@ -1149,29 +1180,12 @@ contract VDAO is DAOProposals {
             electionPeriod,
             candTime,
             candVotingTime,
-            proposalVotingTime
+            proposalVotingTime,
+
+            tokenAddress,
+            nftAddress,
+            stakeAddress
         )
     {}
 
-    /**
-     * @dev Sets the addresses of related contracts.
-     * @param tokenAddress Address of the token contract.
-     * @param nftAddress Address of the NFT contract.
-     * @param stakeAddress Address of the stake contract.
-     */
-    function setAddresses(
-        address tokenAddress,
-        address nftAddress,
-        address stakeAddress
-    ) external onlyOwner {
-        require(
-            tokenAddress != address(0) && nftAddress != address(0) && stakeAddress != address(0),
-            "DAO:Address can not be zero."
-        );
-        token = tokenAddress;
-        nft = nftAddress;
-        stake = stakeAddress;
-
-        emit SetAddresses(token, nft, stake);
-    }
 }
