@@ -1148,13 +1148,13 @@ abstract contract DAOProposals is DAODelegates{
 
 
 /**
- * @title VDAO
+ * @title VSTRGovernance
  * @dev Contract representing a Decentralized Autonomous Organization (DAO) with mechanisms and proposals.
  */
-contract VDAO is DAOProposals {
+contract VSTRGovernance is DAOProposals {
     event SetAddresses(address token, address nft, address stake);
     /**
-     * @dev Constructor to initialize VDAO contract.
+     * @dev Constructor to initialize VSTRGovernance contract.
      * @param initialOwner Address of the initial owner.
      * @param launchTime Timestamp of the DAO launch.
      * @param electionPeriod Duration of the election period.

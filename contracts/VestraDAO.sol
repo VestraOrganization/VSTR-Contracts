@@ -12,7 +12,7 @@ interface IDAO {
 }
 
 
-contract VDAOToken is
+contract VestraDAO is
     ERC20,
     ERC20Burnable,
     Ownable,

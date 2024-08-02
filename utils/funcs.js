@@ -17,7 +17,6 @@ function formatNumber(number, decimals = 6) {
 }
 
 /**
- * Gelen değere desimal ekler
  * @param {*} val 
  * @param {*} decimal 
  * @returns 
@@ -26,7 +25,6 @@ function numToParse(val, decimal = 18) {
     return ethers.parseUnits(val, decimal).toString();
 }
 /**
- * Gelen değerden desimali kaldırır
  * @param {*} val 
  * @param {*} decimal 
  * @returns 
@@ -36,48 +34,44 @@ function numToFormat(val, decimal = 18) {
 }
 
 /**
- * Gelen Yıl, Ay, Gün, Saat, Dakika, Saniye'yi local zaman damgasına çevirir 
  * @param {*} year 
  * @param {*} month 
  * @param {*} day 
  * @param {*} hour 
  * @param {*} minute 
  * @param {*} second 
- * @returns 
+ * @returns Local timestamp
  */
 function timestampLocal(year, month, day, hour = 0, minute = 0, second = 0) {
     const date = new Date(year, month - 1, day, hour, minute, second);
-    return Math.floor(date.getTime() / 1000); // Unix timestamp saniye cinsinden döndürülür
+    return Math.floor(date.getTime() / 1000); 
 }
 
 /**
- * Gelen Yıl, Ay, Gün, Saat, Dakika, Saniye'yi GMT zaman damgasına çevirir 
  * @param {*} year 
  * @param {*} month 
  * @param {*} day 
  * @param {*} hour 
  * @param {*} minute 
  * @param {*} second 
- * @returns 
+ * @returns Unix GMT timestamp
  */
 function timestampGMT(year, month, day, hour = 0, minute = 0, second = 0) {
     const timestamp = Date.UTC(year, month - 1, day, hour, minute, second);
-    return Math.floor(timestamp / 1000); // Unix timestamp saniye cinsinden döndürülür
+    return Math.floor(timestamp / 1000); 
 }
 /**
- * Hardhat EVM timestampını verir
- * @returns 
+ * @returns Hardhat EVM timestamp
  */
 async function timestampEVM() {
     const block = await network.provider.send("eth_getBlockByNumber", ["latest", false]);
     return parseInt(block.timestamp, 16);
 }
 
-
 /**
- * gelen değere ne kadar süre kaldığını gösterir
+ * 
  * @param {*} seconds 
- * @returns 
+ * @returns remaining time
  */
 function timestampSecond(seconds) {
     const minutes = Math.floor(seconds / 60);
@@ -86,7 +80,7 @@ function timestampSecond(seconds) {
     const months = Math.floor(days / 30);
     const years = Math.floor(days / 360);
 
-    const remainingSeconds = seconds % 60; // Saniye hesaplaması eklendi
+    const remainingSeconds = seconds % 60; 
     const remainingMinutes = minutes % 60;
     const remainingHours = hours % 24;
     const remainingDays = days % 30;
@@ -108,7 +102,7 @@ function timestampSecond(seconds) {
     if (remainingMinutes !== 0) {
         res += remainingMinutes + " dakika ";
     }
-    if (remainingSeconds !== 0 || res === "") { // Eğer diğer tüm değerler 0 ise ya da res henüz boş ise saniyeyi ekle
+    if (remainingSeconds !== 0 || res === "") { 
         res += remainingSeconds + " saniye";
     }
 
@@ -116,15 +110,13 @@ function timestampSecond(seconds) {
 }
 
 /**
- * gelen timestampı tarih ve saate formatlar DD:MM:YYYY HH:II:SS
  * @param {*} timestamp 
- * @returns 
+ * @returns DD.MM.YYYY HH:II:SS
  */
 function timestampFormat(timestamp) {
-    const date = new Date(Number(timestamp) * 1000); // Timestamp'ı milisaniyeye çeviriyoruz.
-
+    const date = new Date(Number(timestamp) * 1000); 
     const day = date.getDate();
-    const month = date.getMonth() + 1; // JavaScript'te aylar 0'dan başlar (0=Ocak, 1=Şubat, ...)
+    const month = date.getMonth() + 1;
     const year = date.getFullYear();
     const hours = date.getHours();
     const minutes = date.getMinutes();
@@ -133,32 +125,8 @@ function timestampFormat(timestamp) {
     return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
 }
 
-/**
- * tokenin fiyatını hesaplar
- * @param {*} tokenAmount 
- * @param {*} decimals 
- * @returns 
- */
-function tokenToPrice(tokenAmount, decimals = 18) {
-    let amount = new BigNumber(numToFormat(tokenAmount, decimals));
-    return amount.multipliedBy(0.0007).toFixed();
-}
-/**
- * gelen değerin yüzdeliğini hesaplar
- * @param {*} tokenAmount 
- * @param {*} percent 
- * @returns 
- */
-function percentAmount(amount, percent) {
-    let num = new BigNumber(amount.toString());
-    return num.div(100).multipliedBy(percent).toFixed()
-}
 
-/**
- * Transactionun harcadığı gas miktarını yazdırır
- * @param {*} tx 
- * @param {*} str 
- */
+
 async function gasUsed(tx, str = "gasUsed", res = false) {
     let wait = await tx.wait();
     let gas = wait.gasUsed.toString();
@@ -169,25 +137,13 @@ async function gasUsed(tx, str = "gasUsed", res = false) {
     }
 
 }
-/**
- * ilgili zamana gider
- * @param {*} year 
- * @param {*} month 
- * @param {*} day 
- * @param {*} hour 
- * @param {*} minute 
- * @param {*} second 
- */
+
 async function goToTime(year, month, day, hour = 0, minute = 0, second = 0) {
     await network.provider.send("evm_setNextBlockTimestamp", [timestampLocal(year, month, day, hour, minute, second)]);
     await network.provider.send("evm_mine");
     console.log("Current Time", await currentTime());
 }
 
-/**
- * gelen süreyi mevcut zamanın üzerine ekle
- * @param {*} time 
- */
 async function goToAddTime(time) {
     await network.provider.send("evm_increaseTime", [time]);
     await network.provider.send("evm_mine");
@@ -198,10 +154,9 @@ async function currentTime(params = "") {
     return params +  timestampFormat(await timestampEVM())
 }
 
-// await network.provider.send("evm_increaseTime", [(60*60*24)]); // mevcut timestampa ekleme yapar
-// await network.provider.send("evm_setNextBlockTimestamp", [launchpad.startSaleTime]) // belirtilen zaman damgasına gider
-// await network.provider.send("evm_mine");
-// await network.provider.send("eth_getBlockByNumber", ["latest", false]) // hardhat timestamp 
+function randomInteger(min = 1, max = 100) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 module.exports = {
     _log,
@@ -213,10 +168,9 @@ module.exports = {
     timestampEVM,
     timestampFormat,
     timestampSecond,
-    tokenToPrice,
-    percentAmount,
     gasUsed,
     goToTime,
     goToAddTime,
-    currentTime
+    currentTime,
+    randomInteger
 };

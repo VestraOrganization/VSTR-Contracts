@@ -7,11 +7,11 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
 /**
- * @title StakingFlexible
+ * @title FlexibleStaking
  * @dev A flexible staking contract where users can stake their tokens and receive rewards.
  */
 
-contract StakingFlexible is Ownable, ReentrancyGuard {
+contract FlexibleStaking is Ownable, ReentrancyGuard {
     event Staked(address indexed user, uint256 amount);
     event RecursiveStake(address indexed user, uint256 amount);
     event Claimed(address indexed user, uint256 amount);
@@ -48,7 +48,7 @@ contract StakingFlexible is Ownable, ReentrancyGuard {
     mapping(uint256 => uint256) internal daysRate;
 
     /**
-     * @dev Initializes the StakingFlexible contract.
+     * @dev Initializes the FlexibleStaking contract.
      * @param initialOwner The address of the initial owner.
      * @param tokenAddress The address of the staking token.
      * @param launchTime The timestamp when staking starts.

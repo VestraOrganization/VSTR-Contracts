@@ -14,10 +14,10 @@ interface IDAO {
 }
 
 /**
- * @title Team Contract
+ * @title VestraTeam Contract
  * @dev Contract managing team members and their claims.
  */
-contract Team {
+contract VestraTeam {
     event SetMember(address indexed account, uint256 amount, uint64 startTime);
     event ClaimMember(address indexed account, uint256 amount);
     event StatusMember(address indexed account, bool status);

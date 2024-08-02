@@ -14,7 +14,7 @@ const opt = {
 }
 
 async function main() {
-  const CONTRACT = await ethers.getContractFactory("StakingFlexible");
+  const CONTRACT = await ethers.getContractFactory(opt.contractName);
   const contract = await CONTRACT.deploy(
     opt.ownerAddress, opt.tokenAddress, opt.launchTime, opt.rewardPeriod, opt.poolSize);
 

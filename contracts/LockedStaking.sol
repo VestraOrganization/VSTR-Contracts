@@ -12,11 +12,11 @@ interface ITokenBurn {
 }
 
 /**
- * @title StakingLock
+ * @title LockedStaking
  * @dev A contract for staking tokens with locking functionality
  */
 
-contract StakingLock is Ownable, ReentrancyGuard {
+contract LockedStaking is Ownable, ReentrancyGuard {
     // Events
     event Staked(address indexed user, uint256 amount, uint256 maturity);
     event Unstake(

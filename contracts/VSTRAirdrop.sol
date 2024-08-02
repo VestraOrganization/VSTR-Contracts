@@ -16,9 +16,9 @@ interface ICMLE is IERC721 {
     function ownerOf(uint256 tokenId) external view returns (address);
 }
 
-/// @title VDAOAirdrop Contract
+/// @title VSTRAirdrop Contract
 /// @notice Contract for distributing tokens through an airdrop mechanism with vesting.
-contract VDAOAirdrop is ReentrancyGuard {
+contract VSTRAirdrop is ReentrancyGuard {
 
     /// @notice Event emitted when a user claims tokens.
     event Claim(address indexed account, uint256 amount);

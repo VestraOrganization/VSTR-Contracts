@@ -11,10 +11,10 @@ interface ITokenBurn {
 }
 
 /**
- * @title StakingDAO
+ * @title DAOStaking
  * @dev A contract for staking tokens with DAO features.
  */
-contract StakingDAO is Ownable, ReentrancyGuard {
+contract DAOStaking is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     event Staked(address indexed user, uint256 amount);
@@ -74,7 +74,7 @@ contract StakingDAO is Ownable, ReentrancyGuard {
     mapping(address => bool) internal _votingRegWallet; // Regular Wallet
 
     /**
-     * @notice Constructor to initialize the StakingDAO contract.
+     * @notice Constructor to initialize the DAOStaking contract.
      * @param initialOwner The address of the initial owner.
      * @param tokenAddress The address of the token contract.
      * @param pool The initial size of the reward pool.
