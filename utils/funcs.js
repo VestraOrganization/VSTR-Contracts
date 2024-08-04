@@ -33,6 +33,10 @@ function numToFormat(val, decimal = 18) {
     return ethers.formatUnits(val, decimal).toString();
 }
 
+function parseUnits(val, formatDecimal = 18, unitDecimal = 2){
+    return formatNumber(numToFormat(val, formatDecimal), unitDecimal);
+}
+
 /**
  * @param {*} year 
  * @param {*} month 
@@ -163,6 +167,7 @@ module.exports = {
     formatNumber,
     numToParse,
     numToFormat,
+    parseUnits,
     timestampLocal,
     timestampGMT,
     timestampEVM,

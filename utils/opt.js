@@ -10,11 +10,11 @@ const LAUNCH_TIME = func.timestampLocal(2024, 11, 1, 16, 0, 0); // ⚡
 const DAY_TIME = (60 * 60 * 24);
 const MONTH_TIME = (DAY_TIME * 30);
 
-const networkName = network.name;
+const networkName = network.name == "hardhat" ? "localhost" : network.name;
 
 const DATA = {
     deploy: {
-        ownerAddress: "0x35456BA16043d6DC1D6c4F0AA5df556f54528E31", // ❗
+        ownerAddress: "0x73395DD2954333Fe546414679B931fB08C84ae81", // ❗
         usdtAddress: addresses[networkName].USDT,
         tokenAddress: addresses[networkName].VestraDAO,
         nftAddress: addresses[networkName].CMLENFT,
@@ -22,24 +22,15 @@ const DATA = {
         stakeDaoAddress: addresses[networkName].DAOStaking,
 
     }, delegate: [
-        "0xFB6718ff73885713dC99c8D90Ff56e883A8e5923", // SK Delegate 1 ⚡
-        "0xdff28ec657651b447e426ff5385461af1cc4f76b", // IK Delegate 2 ⚡
-        "0xfe6e86cE375445e2899457b0E006776295DbB0B8", // EK Delegate 3 ⚡
-        "0x271938f0bc383F460fB64d195D331b836546c959", // HK Delegate 4 ⚡
-        "0x07Ae058dbB03B57C66D2393040bFDD86dA69f82e", // IKT Delegate 5 ⚡
-        "0xA356C1745cadE2c8DD6e02536a673a8013E6993e", // SDT Delegate 6 ⚡
-        "0x35456BA16043d6DC1D6c4F0AA5df556f54528E31", // SO Delegate 7 ⚡
+        "0xFB6718ff73885713dC99c8D90Ff56e883A8e5923", // + SK Delegate 1 ⚡
+        "0x9602aec7215Ffdc9749549C131cEeC6f878B319e", // + IK Delegate 2 ⚡
+        "0xfe6e86cE375445e2899457b0E006776295DbB0B8", // + EK Delegate 3 ⚡
+        "0x0c78A9FcDE3908b0eAC1543B9C4078b81D2686B5", // + TM Delegate 4 ⚡
+        "0x4C9E2d3dE9b4AE1C36b31e6Fc25eFEf829C5bA13", // + CT Delegate 5 ⚡
+        "0x90a3073A4817FfeDB824f1E74208ff91147CF007", // + BK Delegate 6 ⚡
+        "0x4880a5288FFFCde9aD285E6d9f1a32125CD55847", // + HK Delegate 7 ⚡
     ],
-    dao: {
-        contractName: "VSTRGovernance",
-        launchTime: LAUNCH_TIME,
-        electionPeriod: (60 * 60 * 24 * 365 * 3),
-        candTime: (60 * 60 * 24 * 10),
-        votingTime: (60 * 60 * 24 * 10),
-        proposalVotingTime: (60 * 60 * 24 * 3),
-        pool: func.numToParse("35750000000", 18),
-    },
-    USDV: {
+    USDT: {
         contractName: "USDT",
         name: "USDT Test Token",
         symbol: "USDT",
@@ -58,6 +49,15 @@ const DATA = {
         symbol: "CMLE",
         totalSupply: "502",
         baseURI: "https://nft.cmleteam.com/metadata/"
+    },
+    dao: {
+        contractName: "VSTRGovernance",
+        launchTime: LAUNCH_TIME,
+        electionPeriod: (60 * 60 * 24 * 365 * 3),
+        candTime: (60 * 60 * 24 * 10),
+        votingTime: (60 * 60 * 24 * 10),
+        proposalVotingTime: (60 * 60 * 24 * 3),
+        pool: func.numToParse("35750000000", 18),
     },
     airdrop: {
         contractName: "VSTRAirdrop",

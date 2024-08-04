@@ -21,7 +21,7 @@ module.exports = {
     hardhat: {
       chainId: 1337,
       accounts: {
-        count: 250,
+        count: 300,
       }
     },
     sepolia: {

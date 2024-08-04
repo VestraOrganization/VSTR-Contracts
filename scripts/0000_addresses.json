@@ -12,30 +12,39 @@
     "VestraTeam": "0x5fc748f1FEb28d7b76fa1c6B07D8ba2d5535177c"
   },
   "sepolia": {
-
+    "USDT": "0x5a740F9981aD101f705B244892c69B2FFCB4Fe25",
+    "VestraDAO": "0x52fB523fD324b516e3138Df96D7c69dbE683c2a6",
+    "CMLENFT": "0xe2E0b20Dd577D939C0e6C261762EC0B86aa31303",
+    "DAOStaking": "0x7F9bb0674B5648EF2a4972aD9000fEa25F8e5030",
+    "FlexibleStaking": "0x4Bb1e6ff398C9ee48CeD546B447e4E58622A8654",
+    "LockedStaking": "0x0e0CD14252170257040EAEe1a5781e5f2f9Ec80D",
+    "VSTRGovernance": "0x401e732AF8100aEFc1eA2D12Ca06e98BD8e7C3Be",
+    "PrivateSale": "0xB69Ea4518fAe87C87EDb3aebCc36AB48568863f6",
+    "VSTRAirdrop": "0x613f5b08a0820eA18AaCFedc7C163575816E55d5",
+    "VestraTeam": "0x38B89a020a2b1279EeE50d37db69ae59CC0FF4f0"
   },
   "bscTestnet": {
     "USDT": "0xc71Dc15d6A50Bc104391707bdCFaD4f0CEa1aAb8",
-    "VDAOToken": "",
+    "VestraDAO": "",
     "CMLENFT": "",
-    "StakingDAO": "",
-    "StakingFlexible": "",
-    "StakingLock": "",
-    "VDAO": "",
+    "DAOStaking": "",
+    "FlexibleStaking": "",
+    "LockedStaking": "",
+    "VSTRGovernance": "",
     "PrivateSale": "",
-    "VDAOAirdrop": "",
-    "Team": ""
+    "VSTRAirdrop": "",
+    "VestraTeam": ""
   },
   "mainnet": {
     "USDT": "0xdac17f958d2ee523a2206206994597c13d831ec7",
-    "VDAOToken": "",
-    "CMLENFT": "",
-    "StakingDAO": "",
-    "StakingFlexible": "",
-    "StakingLock": "",
-    "VDAO": "",
-    "PrivateSale": "",
-    "VDAOAirdrop": "",
-    "Team": ""
+    "VestraDAO": "0x92D5942f468447f1F21c2092580F15544923b434",
+    "CMLENFT": "0x89A521FfC029c62BA747b7B5C4eC05397b658B5B",
+    "DAOStaking": "0xAd37f4B08E90067E5Bb90D6D022CF5AAF7b1d718",
+    "FlexibleStaking": "0x7473cA4D39034e6ae2533483fd5980a57d158429",
+    "LockedStaking": "0x8A30d684b1d3F8f36B36887a3DeCA0Ef2A36A8e3",
+    "VSTRGovernance": "0x96bBC459b14aa1b7138C057cE252a77fec971725",
+    "PrivateSale": "0x7215A085ADe5a74D34d0bd8fFD2571aECBAa83eB",
+    "VSTRAirdrop": "0xd6cd9e238d25C0A2ad5a5f447B28B1B49A7D69f5",
+    "VestraTeam": "0xCd73D4557b760852a4b451776a3CbdCe0ea82579"
   }
 }

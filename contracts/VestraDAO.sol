@@ -23,7 +23,7 @@ contract VestraDAO is
     address public dao;
 
     /**
-     * @dev Constructor to initialize VDAOToken contract.
+     * @dev Constructor to initialize VSTR contract.
      * @param initialOwner Address of the initial owner.
      * @param tokenName Name of the token.
      * @param tokenSymbol Symbol of the token.

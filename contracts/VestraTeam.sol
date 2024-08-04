@@ -100,9 +100,12 @@ contract VestraTeam {
         uint64 startTime,
         uint256 amount
     ) external onlyBoss {
-        require(startTime >= LAUNCH_TIME,"Start time must be equals or greater than launch time");
-        require(startTime > uint64(block.timestamp),"Start time must be greater than current time");
         Member storage user = _members[account];
+
+        if(user.amount == 0){
+            require(startTime >= LAUNCH_TIME,"Start time must be equals or greater than launch time");
+            require(startTime > uint64(block.timestamp),"Start time must be greater than current time");
+        }
 
         if (user.amount > 0) {
             _totalMembersAmount -= (user.amount - user.claimAmount);
@@ -213,7 +216,8 @@ contract VestraTeam {
             uint256 totalMembersAmount,
             uint256 totalClaim,
             uint64 waitingTime,
-            uint64 unlockPeriod
+            uint64 unlockPeriod,
+            uint64 launchTime
         )
     {
         return (
@@ -221,7 +225,8 @@ contract VestraTeam {
             _totalMembersAmount,
             _totalClaim,
             WAITING_TIME,
-            UNLOCK_PERIOD
+            UNLOCK_PERIOD,
+            LAUNCH_TIME
         );
     }
 

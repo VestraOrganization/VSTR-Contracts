@@ -12,7 +12,7 @@ interface ICMLE {
 }
 
 /**
- * @title PrivateSale Phase for VDAO
+ * @title PrivateSale Phase for VSTR
  * @dev A contract for managing a private token sale with vesting.
  */
 contract PrivateSale is Ownable, ReentrancyGuard {

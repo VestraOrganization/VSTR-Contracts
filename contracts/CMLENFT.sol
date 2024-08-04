@@ -225,7 +225,7 @@ contract CMLENFT is
 
 
     /**
-     * @notice Sets addresses for the DAO and token contracts.
+     * @notice Sets addresses for the DAO
      * @param daoAddress Address of the DAO contract.
      */
     function setAddresses(
