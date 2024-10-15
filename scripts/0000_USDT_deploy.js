@@ -4,12 +4,12 @@ const { DATA } = require("../utils/opt")
 
 async function main() {
 
-  const CONTRACT = await ethers.getContractFactory(DATA.USDV.contractName);
+  const CONTRACT = await ethers.getContractFactory(DATA.USDT.contractName);
 
   const contract = await CONTRACT.deploy();
 
   await contract.waitForDeployment()
-  await saveContractAddress(DATA.USDV.contractName, contract.target);
+  await saveContractAddress(DATA.USDT.contractName, contract.target);
 }
 
 main().catch((error) => {
