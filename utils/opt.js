@@ -4,8 +4,9 @@ const addresses = require("../scripts/0000_addresses.json");
 const holders = require("./holders");
 
 
-const PRIVATESALE_START_TIME = func.timestampLocal(2024, 8, 12, 16, 0, 0); // ⚡
-const LAUNCH_TIME = func.timestampLocal(2024, 11, 1, 16, 0, 0); // ⚡
+const PRIVATESALE_START_TIME    = func.timestampLocal(2024, 8, 12, 16, 0, 0); // ⚡
+const PUBLICSALE_START_TIME     = func.timestampLocal(2024, 10, 24, 16, 0, 0);
+const LAUNCH_TIME               = func.timestampLocal(2024, 11, 1, 16, 0, 0); // ⚡
 
 const DAY_TIME = (60 * 60 * 24);
 const MONTH_TIME = (DAY_TIME * 30);
@@ -65,6 +66,16 @@ const DATA = {
         waitingTime: MONTH_TIME * 3,
         unlockPeriods: MONTH_TIME,
         pool: func.numToParse("1000000000", 18)
+    },
+    publicSale: {
+        // TGE 10%, cliff 6 month, monthly unlock 5%.
+        contractName: "PublicSale",
+        startTime: PUBLICSALE_START_TIME,
+        endTime: func.timestampLocal(2024, 10, 31, 16, 0, 0),
+        startVestingTime: LAUNCH_TIME,
+        cliffTime: (60 * 60 * 24 * 30 * 6),
+        unlockPeriods: (60 * 60 * 24 * 30),
+        pool: func.numToParse("1250000000", 18) 
     },
     privateSale: {
         contractName: "PrivateSale",

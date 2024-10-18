@@ -6,19 +6,19 @@
     "1400_StakeFlexible_deploy.js": "1771614",
     "1500_StakeLock_deploy.js": "2010375",
     "1600_DAO_deploy.js": "5450387",
-    "1700_PrivateSale_deploy.js": "2083070",
-    "1800_Airdrop_deploy.js": "1346055",
-    "1900_Team_deploy.js": "1341083",
+    "1700_PrivateSale_deploy.js": "2083082",
+    "1800_Airdrop_deploy.js": "1346067",
+    "1900_Team_deploy.js": "1341095",
     "2000_Token_setAddress.js": "47181",
     "2001_NFT_setAddresses.js": "47222",
     "2002_DAO_setFirstDelegates.js": "209230",
-    "3000_SendToken_StakeDao.js": "62896",
+    "3000_SendToken_StakeDao.js": "62884",
     "3001_SendToken_StakeFlexible.js": "62896",
     "3002_SendToken_StakeLock.js": "62896",
     "3003_SendToken_DAO.js": "62896",
-    "3004_SendToken_PrivateSale.js": "62884",
+    "3004_SendToken_PrivateSale.js": "62872",
     "3005_SendToken_Airdrop.js": "62896",
-    "3006_SendToken_Team.js": "62884",
+    "3006_SendToken_Team.js": "62896",
     "1202_NFT_createHolders.js": "16457136",
     "1502_StakeLock_1_maturity.js": "228500",
     "1503_StakeLock_3_maturity.js": "194338",
@@ -35,7 +35,9 @@
     "1610_DAO_Category_Charities.js": "122890",
     "1611_DAO_Category_Advisors.js": "122890",
     "1612_DAO_Category_Treasury.js": "122902",
-    "5100_OTC_deploy.js": "840945"
+    "5100_OTC_deploy.js": "840945",
+    "5200_PublicSale_deploy.js": "1421481",
+    "5202_PublicSale_SendToken.js": "58096"
   },
   "sepolia": {
     "1100_Token_deploy.js": "1651772",
@@ -73,7 +75,8 @@
     "3004_SendToken_PrivateSale.js": "62884",
     "3005_SendToken_Airdrop.js": "62896",
     "3006_SendToken_Team.js": "62884",
-    "5100_OTC_deploy.js": "840945"
+    "5100_OTC_deploy.js": "840945",
+    "5200_PublicSale_deploy.js": "1421481"
   },
   "mainnet": {
     "1100_Token_deploy.js": "1651772",
@@ -111,6 +114,7 @@
     "3004_SendToken_PrivateSale.js": "62884",
     "3005_SendToken_Airdrop.js": "62896",
     "3006_SendToken_Team.js": "62896",
-    "5100_OTC_deploy.js": "840945"
+    "5100_OTC_deploy.js": "840945",
+    "5200_PublicSale_deploy.js": "1421481"
   }
 }
