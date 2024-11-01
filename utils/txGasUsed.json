@@ -37,7 +37,8 @@
     "1612_DAO_Category_Treasury.js": "122902",
     "5100_OTC_deploy.js": "840945",
     "5200_PublicSale_deploy.js": "1421481",
-    "5202_PublicSale_SendToken.js": "58096"
+    "5202_PublicSale_SendToken.js": "58096",
+    "5000_AirdropToken_deploy.js": "806240"
   },
   "sepolia": {
     "1100_Token_deploy.js": "1651772",
@@ -115,6 +116,7 @@
     "3005_SendToken_Airdrop.js": "62896",
     "3006_SendToken_Team.js": "62896",
     "5100_OTC_deploy.js": "840945",
-    "5200_PublicSale_deploy.js": "1421481"
+    "5200_PublicSale_deploy.js": "1421481",
+    "5000_AirdropToken_deploy.js": "806240"
   }
 }
