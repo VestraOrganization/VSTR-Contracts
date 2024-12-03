@@ -38,7 +38,8 @@
     "5100_OTC_deploy.js": "840945",
     "5200_PublicSale_deploy.js": "1421481",
     "5202_PublicSale_SendToken.js": "58096",
-    "5000_AirdropToken_deploy.js": "806240"
+    "5000_AirdropToken_deploy.js": "806240",
+    "5300_regularWalletWinners_deploy.js": "976672"
   },
   "sepolia": {
     "1100_Token_deploy.js": "1651772",
@@ -117,6 +118,7 @@
     "3006_SendToken_Team.js": "62896",
     "5100_OTC_deploy.js": "840945",
     "5200_PublicSale_deploy.js": "1421481",
-    "5000_AirdropToken_deploy.js": "806240"
+    "5000_AirdropToken_deploy.js": "806240",
+    "5300_regularWalletWinners_deploy.js": "976672"
   }
 }
