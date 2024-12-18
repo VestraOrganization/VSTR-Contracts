@@ -39,7 +39,9 @@
     "5200_PublicSale_deploy.js": "1421481",
     "5202_PublicSale_SendToken.js": "58096",
     "5000_AirdropToken_deploy.js": "806240",
-    "5300_regularWalletWinners_deploy.js": "976672"
+    "5300_regularWalletWinners_deploy.js": "976672",
+    "5400_RewardPoolLockStaking_deploy.js": "1127417",
+    "5500_DonateCommunity_deploy.js": "709029"
   },
   "sepolia": {
     "1100_Token_deploy.js": "1651772",
@@ -119,6 +121,8 @@
     "5100_OTC_deploy.js": "840945",
     "5200_PublicSale_deploy.js": "1421481",
     "5000_AirdropToken_deploy.js": "806240",
-    "5300_regularWalletWinners_deploy.js": "976672"
+    "5300_regularWalletWinners_deploy.js": "976672",
+    "5500_DonateCommunity_deploy.js": "709029",
+    "5400_RewardPoolLockStaking_deploy.js": "1132795"
   }
 }

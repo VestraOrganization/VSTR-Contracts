@@ -217,7 +217,7 @@ contract LockedStaking is Ownable, ReentrancyGuard {
             totalAmount -= penaltyAmount;
         }
         
-
+        user.stakeAmount = 0; // It should
         user.penalty = penaltyAmount;
         user.isActive = false;
 
