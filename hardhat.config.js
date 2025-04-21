@@ -28,6 +28,10 @@ module.exports = {
       url: process.env.ALCHEMY_SEPOLIA_URL, 
       accounts: [`0x${process.env.ACCOUNT_2_PRIVATEKEY}`], 
     },
+    holesky: {
+      url: process.env.HOLESKY_TEST_URL,
+      accounts: [`0x${process.env.ACCOUNT_2_PRIVATEKEY}`],
+    },
     bscTestnet: {
       url: "https://data-seed-prebsc-1-s1.binance.org:8545",
       chainId: 97,

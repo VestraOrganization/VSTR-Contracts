@@ -20,6 +20,6 @@ beforeContracts
 calVestings.xlsx
 calUnlockPeriod.xlsx
 USDT.sol
-XTK.sol
+XToken.sol
 
 /test
